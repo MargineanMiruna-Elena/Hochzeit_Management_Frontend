@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import {Button, Input, Typography} from "@material-tailwind/react";
+import { Button, Input, Typography } from "@material-tailwind/react";
+import { Link } from 'react-router-dom';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -17,13 +18,12 @@ function Login() {
     };
 
     return (
-
         <div style={{ maxWidth: 400, margin: '50px auto', padding: 20, border: '1px solid #ccc', borderRadius: 8 }}>
             <Typography variant="h3" className="my-8 text-center">
                 Log in
             </Typography>
             <form onSubmit={handleSubmit}>
-                <div className="w-72 mb-8 w-full">
+                <div className="mb-8 w-full">
                     <Input
                         type="email"
                         label="Email"
@@ -32,7 +32,7 @@ function Login() {
                         required
                     />
                 </div>
-                <div className="w-72 mb-8 w-full">
+                <div className="mb-8 w-full">
                     <Input
                         type="password"
                         label="Password"
@@ -41,14 +41,14 @@ function Login() {
                         required
                     />
                 </div>
-                <Button className="mt-8" fullWidth>
-                    log in
+                <Button type="submit" className="mt-8" fullWidth>
+                    Log in
                 </Button>
                 <Typography color="gray" className="mt-4 text-center font-normal">
-                    Don't have an account?{" "}
-                    <a href="register" className="font-medium text-gray-900">
+                    Don’t have an account?{" "}
+                    <Link to="/register" className="font-medium text-gray-900">
                         Sign up.
-                    </a>
+                    </Link>
                 </Typography>
             </form>
         </div>
