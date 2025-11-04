@@ -8,22 +8,21 @@ function Login() {
     const [errors, setErrors] = useState({ email: '', password: '', backend: '' });
     const navigate = useNavigate();
 
-    // Real-time field validation
     const validateField = (name, value) => {
         let message = '';
 
         if (name === 'email') {
-            if (!value) message = 'Email is required';
-            else if (!/\S+@\S+\.\S+/.test(value)) message = 'Invalid email address';
+            if (!value) message = 'Email is required.';
+            else if (!/\S+@\S+\.\S+/.test(value)) message = 'Invalid email address.';
         }
 
         if (name === 'password') {
-            if (!value) message = 'Password is required';
-            else if (value.length < 6) message = 'Password must be at least 6 characters';
+            if (!value) message = 'Password is required.';
+            else if (value.length < 6) message = 'Password must be at least 6 characters.';
         }
 
         setErrors(prev => ({ ...prev, [name]: message }));
-        return !message; // true if valid
+        return !message;
     };
 
     const handleChange = (e) => {
@@ -59,11 +58,32 @@ function Login() {
                 }));
                 navigate("/home", { replace: true });
             } else {
-                setErrors(prev => ({ ...prev, backend: data.message }));
+                let message;
+                switch (data.status || res.status) {
+                    case 400:
+                        message = "Bad request. Please check your input.";
+                        break;
+                    case 401:
+                        message = "Invalid email or password.";
+                        break;
+                    case 403:
+                        message = "You don't have permission to access this resource.";
+                        break;
+                    case 404:
+                        message = "Server endpoint not found. Contact support.";
+                        break;
+                    case 500:
+                        message = "Internal server error. Please try again later.";
+                        break;
+                    default:
+                        message = data.message || data.error || "An unexpected error occurred.";
+                }
+
+                setErrors(prev => ({ ...prev, backend: message }));
             }
         } catch (err) {
-            console.error(err);
-            setErrors(prev => ({ ...prev, backend: "Server error" }));
+            console.error("Network error:", err);
+            setErrors(prev => ({ ...prev, backend: "Cannot connect to server." }));
         }
     };
 
@@ -102,7 +122,7 @@ function Login() {
                 </div>
 
                 {errors.backend && (
-                    <Typography color="red" className="text-center mb-4 ml-2">
+                    <Typography color="red" className="text-sm h-5 mt-1 ml-2">
                         {errors.backend}
                     </Typography>
                 )}
