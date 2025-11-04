@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Input, Typography } from "@material-tailwind/react";
-import { Link } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -10,6 +10,7 @@ function Register() {
         confirmPassword: '',
     });
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({
@@ -18,10 +19,10 @@ function Register() {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
 
+        setError('');
         const { name, email, password, confirmPassword } = formData;
 
         if (!name || !email || !password || !confirmPassword) {
@@ -34,8 +35,28 @@ function Register() {
             return;
         }
 
-        // TODO: Add registration logic (API call)
-        console.log('Registered:', formData);
+        try {
+            const res = await fetch("http://localhost:8080/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, password }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem("user", JSON.stringify({
+                    id: data.id,
+                    name: data.name,
+                    email: data.email
+                }));
+                navigate("/home", { replace: true });
+            } else {
+                setError(data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            setError("Server error");
+        }
     };
 
     return (
