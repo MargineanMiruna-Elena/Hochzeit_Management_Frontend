@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import ProtectedRoute from "./ProtectedRoute";
+import ChangePassword from "./pages/ChangePassword";
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -21,6 +22,7 @@ function App() {
                 <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/changePassword" element={<ChangePassword />} />
                     <Route
                         path="/home"
                         element={
