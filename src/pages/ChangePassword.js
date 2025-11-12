@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { Button, Input, Typography } from "@material-tailwind/react";
-import { Link, useNavigate } from 'react-router-dom';
+import {Button, Input, Typography} from "@material-tailwind/react";
+import {Link, useNavigate} from "react-router-dom";
+import React, {useState} from "react";
 
-function Login() {
+function ChangePassword() {
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [errors, setErrors] = useState({ email: '', password: '', backend: '' });
     const navigate = useNavigate();
 
@@ -21,15 +23,32 @@ function Login() {
             else if (value.length < 6) message = 'Password must be at least 6 characters.';
         }
 
+        if (name === 'confirmPassword') {
+            if (!value) message = 'Password confirmation is required.';
+            else if (value.length < 6) message = 'Password must be at least 6 characters.';
+        }
+
         setErrors(prev => ({ ...prev, [name]: message }));
         return !message;
     };
+
+    const comparePasswords = (pass, confPass) => {
+        let message = '';
+
+        if (pass !== confPass) {
+            message = 'Passwords do not match.'
+        }
+
+        setErrors(prev => ({ ...prev, confirmPassword: message }));
+        return !message;
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target;
 
         if (name === 'email') setEmail(value);
         if (name === 'password') setPassword(value);
+        if (name === 'confirmPassword') setConfirmPassword(value);
 
         validateField(name, value);
     };
@@ -39,11 +58,15 @@ function Login() {
 
         const isEmailValid = validateField('email', email);
         const isPasswordValid = validateField('password', password);
+        const isConfirmPasswordValid = validateField('confirmPassword', confirmPassword);
+        const arePasswordsEqual = comparePasswords(password, confirmPassword);
 
-        if (!isEmailValid || !isPasswordValid) return;
+        if (!isEmailValid || !isPasswordValid || !isConfirmPasswordValid) return;
+
+        if (!arePasswordsEqual) return;
 
         try {
-            const res = await fetch("http://localhost:8080/api/auth/login", {
+            const res = await fetch("http://localhost:8080/api/auth/change_password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -51,12 +74,7 @@ function Login() {
 
             const data = await res.json();
             if (res.ok) {
-                localStorage.setItem("user", JSON.stringify({
-                    id: data.id,
-                    name: data.name,
-                    email: data.email
-                }));
-                navigate("/home", { replace: true });
+                navigate("/login", { replace: true });
             } else {
                 let message;
                 switch (data.status || res.status) {
@@ -90,7 +108,7 @@ function Login() {
     return (
         <div style={{ maxWidth: 400, margin: '50px auto', padding: 20, border: '1px solid #ccc', borderRadius: 8 }}>
             <Typography variant="h3" className="my-8 text-center">
-                Log in
+                Change password
             </Typography>
             <form onSubmit={handleSubmit}>
                 <div className="mb-4 w-full relative">
@@ -121,23 +139,30 @@ function Login() {
                     </Typography>
                 </div>
 
-                <Typography color="red" className="text-sm h-5 mt-1 ml-2">
+                <div className="mb-4 w-full relative">
+                    <Input
+                        type="password"
+                        label="Confirm Password"
+                        name="confirmPassword"
+                        value={confirmPassword}
+                        onChange={handleChange}
+                        required
+                    />
+                    <Typography color="red" className="text-sm h-5 mt-1 ml-2">
+                        {errors.confirmPassword || " "}
+                    </Typography>
+                </div>
+
+                <Typography color="red" className="text-sm min-h-5 mt-1 ml-2">
                     {errors.backend || " "}
                 </Typography>
 
                 <Button type="submit" className="mt-4" fullWidth>
-                    Log in
+                    Change password
                 </Button>
-
-                <Typography color="gray" className="mt-4 text-center font-normal">
-                    Don’t have an account?{" "}
-                    <Link to="/register" className="font-medium text-gray-900">
-                        Sign up.
-                    </Link>
-                </Typography>
             </form>
         </div>
     );
 }
 
-export default Login;
+export default ChangePassword;
