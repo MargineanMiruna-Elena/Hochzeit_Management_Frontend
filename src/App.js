@@ -5,6 +5,7 @@ import "./App.css";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
+import Profile from "./pages/Profile";
 import ProtectedRoute from "./ProtectedRoute";
 import ChangePassword from "./pages/ChangePassword";
 
@@ -22,7 +23,22 @@ function App() {
                 <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
-                    <Route path="/changePassword" element={<ChangePassword />} />
+                    <Route
+                        path="/changePassword"
+                        element={
+                            <ProtectedRoute isLoggedIn={isLoggedIn}>
+                                <ChangePassword />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/profile"
+                        element={
+                            <ProtectedRoute isLoggedIn={isLoggedIn}>
+                                <Profile />
+                            </ProtectedRoute>
+                        }
+                    />
                     <Route
                         path="/home"
                         element={
