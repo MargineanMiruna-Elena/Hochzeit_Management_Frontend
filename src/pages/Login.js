@@ -25,13 +25,36 @@ function Login() {
         return !message;
     };
 
+    const backendErrorMessage = (data, res) => {
+        let message;
+        switch (data.status || res.status) {
+            case 400:
+                message = "Bad request. Please check your input.";
+                break;
+            case 401:
+                message = "Invalid email or password.";
+                break;
+            case 403:
+                message = "You don't have permission to access this resource.";
+                break;
+            case 404:
+                message = "Server endpoint not found. Contact support.";
+                break;
+            case 500:
+                message = "Internal server error. Please try again later.";
+                break;
+            default:
+                message = data.message || data.error || "An unexpected error occurred.";
+        }
+
+        setErrors(prev => ({ ...prev, backend: message }));
+    }
+
     const handleChange = (e) => {
         const { name, value } = e.target;
 
         if (name === 'email') setEmail(value);
         if (name === 'password') setPassword(value);
-
-        validateField(name, value);
     };
 
     const handleSubmit = async (e) => {
@@ -58,28 +81,7 @@ function Login() {
                 }));
                 navigate("/home", { replace: true });
             } else {
-                let message;
-                switch (data.status || res.status) {
-                    case 400:
-                        message = "Bad request. Please check your input.";
-                        break;
-                    case 401:
-                        message = "Invalid email or password.";
-                        break;
-                    case 403:
-                        message = "You don't have permission to access this resource.";
-                        break;
-                    case 404:
-                        message = "Server endpoint not found. Contact support.";
-                        break;
-                    case 500:
-                        message = "Internal server error. Please try again later.";
-                        break;
-                    default:
-                        message = data.message || data.error || "An unexpected error occurred.";
-                }
-
-                setErrors(prev => ({ ...prev, backend: message }));
+                backendErrorMessage(data, res);
             }
         } catch (err) {
             console.error("Network error:", err);
@@ -100,6 +102,7 @@ function Login() {
                         name="email"
                         value={email}
                         onChange={handleChange}
+                        onBlur={(e) => validateField(e.target.name, e.target.value)}
                         required
                     />
                     <Typography color="red" className="text-sm h-5 mt-1 ml-2">
@@ -114,6 +117,7 @@ function Login() {
                         name="password"
                         value={password}
                         onChange={handleChange}
+                        onBlur={(e) => validateField(e.target.name, e.target.value)}
                         required
                     />
                     <Typography color="red" className="text-sm h-5 mt-1 ml-2">
