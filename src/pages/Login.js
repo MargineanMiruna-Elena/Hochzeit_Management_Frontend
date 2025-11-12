@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Button, Input, Typography } from "@material-tailwind/react";
-import { Link, useNavigate } from 'react-router-dom';
+import React, {useState} from 'react';
+import {Button, Input, Typography} from "@material-tailwind/react";
+import {Link, useNavigate} from 'react-router-dom';
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [errors, setErrors] = useState({ email: '', password: '', backend: '' });
+    const [errors, setErrors] = useState({email: '', password: '', backend: ''});
     const navigate = useNavigate();
 
     const validateField = (name, value) => {
@@ -21,7 +21,7 @@ function Login() {
             else if (value.length < 6) message = 'Password must be at least 6 characters.';
         }
 
-        setErrors(prev => ({ ...prev, [name]: message }));
+        setErrors(prev => ({...prev, [name]: message}));
         return !message;
     };
 
@@ -47,11 +47,11 @@ function Login() {
                 message = data.message || data.error || "An unexpected error occurred.";
         }
 
-        setErrors(prev => ({ ...prev, backend: message }));
+        setErrors(prev => ({...prev, backend: message}));
     }
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
 
         if (name === 'email') setEmail(value);
         if (name === 'password') setPassword(value);
@@ -68,8 +68,8 @@ function Login() {
         try {
             const res = await fetch("http://localhost:8080/api/auth/login", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({email, password}),
             });
 
             const data = await res.json();
@@ -79,67 +79,69 @@ function Login() {
                     name: data.name,
                     email: data.email
                 }));
-                navigate("/home", { replace: true });
+                navigate("/home", {replace: true});
             } else {
                 backendErrorMessage(data, res);
             }
         } catch (err) {
             console.error("Network error:", err);
-            setErrors(prev => ({ ...prev, backend: "Cannot connect to server." }));
+            setErrors(prev => ({...prev, backend: "Cannot connect to server."}));
         }
     };
 
     return (
-        <div style={{ maxWidth: 400, margin: '50px auto', padding: 20, border: '1px solid #ccc', borderRadius: 8 }}>
-            <Typography variant="h3" className="my-8 text-center">
-                Log in
-            </Typography>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-4 w-full relative">
-                    <Input
-                        type="email"
-                        label="Email"
-                        name="email"
-                        value={email}
-                        onChange={handleChange}
-                        onBlur={(e) => validateField(e.target.name, e.target.value)}
-                        required
-                    />
-                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
-                        {errors.email || " "}
-                    </Typography>
-                </div>
-
-                <div className="mb-4 w-full relative">
-                    <Input
-                        type="password"
-                        label="Password"
-                        name="password"
-                        value={password}
-                        onChange={handleChange}
-                        onBlur={(e) => validateField(e.target.name, e.target.value)}
-                        required
-                    />
-                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
-                        {errors.password || " "}
-                    </Typography>
-                </div>
-
-                <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
-                    {errors.backend || " "}
-                </Typography>
-
-                <Button type="submit" className="mt-4 bg-pink-600" fullWidth>
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+            <div className="w-full max-w-md p-6 border border-gray-300 rounded-lg bg-white shadow-md">
+                <Typography variant="h3" className="my-8 text-center font-bold text-4xl font-black leading-tight tracking-tight min-w-72 text-gray-900">
                     Log in
-                </Button>
-
-                <Typography color="gray" className="mt-4 text-center font-normal">
-                    Don’t have an account?{" "}
-                    <Link to="/register" className="font-medium text-pink-600">
-                        Sign up.
-                    </Link>
                 </Typography>
-            </form>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-4 w-full relative">
+                        <Input
+                            type="email"
+                            label="Email"
+                            name="email"
+                            value={email}
+                            onChange={handleChange}
+                            onBlur={(e) => validateField(e.target.name, e.target.value)}
+                            required
+                        />
+                        <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
+                            {errors.email || " "}
+                        </Typography>
+                    </div>
+
+                    <div className="mb-4 w-full relative">
+                        <Input
+                            type="password"
+                            label="Password"
+                            name="password"
+                            value={password}
+                            onChange={handleChange}
+                            onBlur={(e) => validateField(e.target.name, e.target.value)}
+                            required
+                        />
+                        <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
+                            {errors.password || " "}
+                        </Typography>
+                    </div>
+
+                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
+                        {errors.backend || " "}
+                    </Typography>
+
+                    <Button type="submit" className="mt-4 bg-pink-600" fullWidth>
+                        Log in
+                    </Button>
+
+                    <Typography color="gray" className="mt-4 text-center font-normal">
+                        Don’t have an account?{" "}
+                        <Link to="/register" className="font-medium text-pink-600">
+                            Sign up.
+                        </Link>
+                    </Typography>
+                </form>
+            </div>
         </div>
     );
 }

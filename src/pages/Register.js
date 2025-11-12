@@ -9,7 +9,7 @@ function Register() {
         password: '',
         confirmPassword: '',
     });
-    const [errors, setErrors] = useState({ name: '', email: '', password: '', confirmPassword: '', backend: '' });
+    const [errors, setErrors] = useState({name: '', email: '', password: '', confirmPassword: '', backend: ''});
     const navigate = useNavigate();
 
     const validateField = (name, value) => {
@@ -34,7 +34,7 @@ function Register() {
             else if (value.length < 6) message = 'Password must be at least 6 characters.';
         }
 
-        setErrors(prev => ({ ...prev, [name]: message }));
+        setErrors(prev => ({...prev, [name]: message}));
         return !message;
     };
 
@@ -45,7 +45,7 @@ function Register() {
             message = 'Passwords do not match.'
         }
 
-        setErrors(prev => ({ ...prev, confirmPassword: message }));
+        setErrors(prev => ({...prev, confirmPassword: message}));
         return !message;
     }
 
@@ -71,16 +71,16 @@ function Register() {
                 message = data.message || data.error || "An unexpected error occurred.";
         }
 
-        setErrors(prev => ({ ...prev, backend: message }));
+        setErrors(prev => ({...prev, backend: message}));
     }
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setFormData(prev => ({...prev, [name]: value}));
     };
 
     const handleBlur = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         validateField(name, value);
 
         if (name === "confirmPassword" || name === "password") {
@@ -126,87 +126,89 @@ function Register() {
             }
         } catch (err) {
             console.error("Network error:", err);
-            setErrors(prev => ({ ...prev, backend: "Cannot connect to server." }));
+            setErrors(prev => ({...prev, backend: "Cannot connect to server."}));
         }
     };
 
     return (
-        <div style={{maxWidth: 400, margin: '50px auto', padding: 20, border: '1px solid #ccc', borderRadius: 8}}>
-            <Typography variant="h3" className="my-8 text-center">
-                Sign Up
-            </Typography>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-4 w-full relative">
-                    <Input
-                        name="name"
-                        label="Full Name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                    />
-                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
-                        {errors.name || " "}
-                    </Typography>
-                </div>
-                <div className="mb-4 w-full relative">
-                    <Input
-                        type="email"
-                        name="email"
-                        label="Email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                    />
-                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
-                        {errors.email || " "}
-                    </Typography>
-                </div>
-                <div className="mb-6 w-full">
-                    <Input
-                        type="password"
-                        name="password"
-                        label="Password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                    />
-                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
-                        {errors.password || " "}
-                    </Typography>
-                </div>
-                <div className="mb-4 w-full relative">
-                    <Input
-                        type="password"
-                        name="confirmPassword"
-                        label="Confirm Password"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        required
-                    />
-                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
-                        {errors.confirmPassword || " "}
-                    </Typography>
-                </div>
-
-                <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
-                    {errors.backend || " "}
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+            <div className="w-full max-w-md p-6 border border-gray-300 rounded-lg bg-white shadow-md">
+                <Typography variant="h3" className="my-8 text-center font-bold text-4xl font-black leading-tight tracking-tight min-w-72 text-gray-900">
+                    Sign Up
                 </Typography>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-4 w-full relative">
+                        <Input
+                            name="name"
+                            label="Full Name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            required
+                        />
+                        <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
+                            {errors.name || " "}
+                        </Typography>
+                    </div>
+                    <div className="mb-4 w-full relative">
+                        <Input
+                            type="email"
+                            name="email"
+                            label="Email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            required
+                        />
+                        <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
+                            {errors.email || " "}
+                        </Typography>
+                    </div>
+                    <div className="mb-6 w-full">
+                        <Input
+                            type="password"
+                            name="password"
+                            label="Password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            required
+                        />
+                        <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
+                            {errors.password || " "}
+                        </Typography>
+                    </div>
+                    <div className="mb-4 w-full relative">
+                        <Input
+                            type="password"
+                            name="confirmPassword"
+                            label="Confirm Password"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            required
+                        />
+                        <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
+                            {errors.confirmPassword || " "}
+                        </Typography>
+                    </div>
 
-                <Button type="submit" className="mt-4 bg-pink-600" fullWidth>
-                    Register
-                </Button>
+                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
+                        {errors.backend || " "}
+                    </Typography>
 
-                <Typography color="gray" className="mt-4 text-center font-normal">
-                    Already have an account?{" "}
-                    <Link to="/login" className="font-medium text-pink-600">
-                        Log in.
-                    </Link>
-                </Typography>
-            </form>
+                    <Button type="submit" className="mt-4 bg-pink-600" fullWidth>
+                        Register
+                    </Button>
+
+                    <Typography color="gray" className="mt-4 text-center font-normal">
+                        Already have an account?{" "}
+                        <Link to="/login" className="font-medium text-pink-600">
+                            Log in.
+                        </Link>
+                    </Typography>
+                </form>
+            </div>
         </div>
     );
 }

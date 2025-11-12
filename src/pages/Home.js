@@ -53,7 +53,7 @@ export default function Home() {
     return (
         <div className="min-h-screen w-full bg-gray-50">
             <div className="flex flex-col items-center py-5">
-                <div className="flex flex-col w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col w-full px-4 sm:px-6 lg:px-8">
                     <DashboardHeader />
 
                     <main className="mt-8 flex flex-col gap-8 flex-1">
