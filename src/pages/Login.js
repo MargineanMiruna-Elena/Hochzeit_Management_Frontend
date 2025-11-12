@@ -105,7 +105,7 @@ function Login() {
                         onBlur={(e) => validateField(e.target.name, e.target.value)}
                         required
                     />
-                    <Typography color="red" className="text-sm h-5 mt-1 ml-2">
+                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
                         {errors.email || " "}
                     </Typography>
                 </div>
@@ -120,22 +120,22 @@ function Login() {
                         onBlur={(e) => validateField(e.target.name, e.target.value)}
                         required
                     />
-                    <Typography color="red" className="text-sm h-5 mt-1 ml-2">
+                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
                         {errors.password || " "}
                     </Typography>
                 </div>
 
-                <Typography color="red" className="text-sm h-5 mt-1 ml-2">
+                <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
                     {errors.backend || " "}
                 </Typography>
 
-                <Button type="submit" className="mt-4" fullWidth>
+                <Button type="submit" className="mt-4 bg-pink-600" fullWidth>
                     Log in
                 </Button>
 
                 <Typography color="gray" className="mt-4 text-center font-normal">
                     Don’t have an account?{" "}
-                    <Link to="/register" className="font-medium text-gray-900">
+                    <Link to="/register" className="font-medium text-pink-600">
                         Sign up.
                     </Link>
                 </Typography>

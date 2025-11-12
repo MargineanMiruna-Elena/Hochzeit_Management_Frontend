@@ -132,7 +132,7 @@ function ChangePassword() {
                         onBlur={handleBlur}
                         required
                     />
-                    <Typography color="red" className="text-sm h-5 mt-1 ml-2">
+                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
                         {errors.email || " "}
                     </Typography>
                 </div>
@@ -147,7 +147,7 @@ function ChangePassword() {
                         onBlur={handleBlur}
                         required
                     />
-                    <Typography color="red" className="text-sm h-5 mt-1 ml-2">
+                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
                         {errors.password || " "}
                     </Typography>
                 </div>
@@ -162,16 +162,16 @@ function ChangePassword() {
                         onBlur={handleBlur}
                         required
                     />
-                    <Typography color="red" className="text-sm h-5 mt-1 ml-2">
+                    <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
                         {errors.confirmPassword || " "}
                     </Typography>
                 </div>
 
-                <Typography color="red" className="text-sm min-h-5 mt-1 ml-2">
+                <Typography className="text-sm min-h-5 mt-1 ml-2 text-pink-600">
                     {errors.backend || " "}
                 </Typography>
 
-                <Button type="submit" className="mt-4" fullWidth>
+                <Button type="submit" className="mt-4 bg-pink-600" fullWidth>
                     Change password
                 </Button>
             </form>
