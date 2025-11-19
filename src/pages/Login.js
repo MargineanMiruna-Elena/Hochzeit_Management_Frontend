@@ -72,13 +72,23 @@ function Login() {
                 body: JSON.stringify({email, password}),
             });
 
-            const data = await res.json();
+            let data;
+            try {
+                data = await res.json();
+            } catch (err) {
+                console.warn("Empty or invalid JSON response", err);
+            }
+
             if (res.ok) {
-                localStorage.setItem("user", JSON.stringify({
-                    id: data.id,
-                    name: data.name,
-                    email: data.email
-                }));
+                localStorage.setItem("token", data.token);
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify({
+                        id: data.id,
+                        name: data.name,
+                        email: data.email,
+                    })
+                );
                 navigate("/home", {replace: true});
             } else {
                 backendErrorMessage(data, res);
