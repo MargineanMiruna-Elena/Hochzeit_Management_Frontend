@@ -8,6 +8,8 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./ProtectedRoute";
 import ChangePassword from "./pages/ChangePassword";
+import EventDetails from "./pages/EventDetails";
+import CreateEvent from "./pages/CreateEvent";
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -44,6 +46,22 @@ function App() {
                         element={
                             <ProtectedRoute isLoggedIn={isLoggedIn}>
                                 <Home />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/events/:id"
+                        element={
+                            <ProtectedRoute isLoggedIn={isLoggedIn}>
+                                <EventDetails />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/events/new"
+                        element={
+                            <ProtectedRoute isLoggedIn={isLoggedIn}>
+                                <CreateEvent />
                             </ProtectedRoute>
                         }
                     />
