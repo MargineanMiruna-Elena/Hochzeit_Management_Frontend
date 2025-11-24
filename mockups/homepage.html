@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EverAfter Planner - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ec136d",
+              "background-light": "#f8f6f7",
+              "background-dark": "#221018",
+              "theme-pink": "#FF75A8",
+              "theme-green": "#A2D94B",
+              "theme-dark-gray": "#333333",
+              "theme-muted-gray": "#6c757d",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-theme-dark-gray dark:text-gray-200">
+<div class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<div class="flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-gray-700 px-6 py-4 rounded-xl bg-white dark:bg-background-dark shadow-sm">
+<div class="flex items-center gap-4 text-theme-dark-gray dark:text-white">
+<div class="text-primary size-7">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">EverAfter Planner</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-background-light dark:bg-gray-700 text-theme-muted-gray dark:text-gray-300 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBEpVlGAI3xw0ry-jtxm7RIdT0M4WkUrwrbJaEYe21262nrF3qAr9jmzShsHPgFQqohhmnv_dqCXBeqvtTazkR68dEK7gM_ZNGt8b_anJI8eHUbApqCJnbY_3cD_oxXugANFx7KesveYwYX0lhP7jFZYSw1a1szWvfp2BsgsE89qPFU1bbZKGLUybKZwAbjwu8MLGd2Yp_SDdAOYNMRigRfzRFI1JiEf7JlyEvbbyYw-K3B1IzDRgQXUyJ5LE5PTmJDQaZVtGGWhwPe");'></div>
+</div>
+</header>
+<main class="mt-8 flex flex-col gap-8 flex-1">
+<div class="flex flex-wrap items-center justify-between gap-4 px-4">
+<p class="text-4xl font-black leading-tight tracking-[-0.033em] min-w-72 text-theme-dark-gray dark:text-white">Upcoming Events</p>
+<div class="flex items-center gap-4">
+<div class="flex-1 w-full max-w-md">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-theme-muted-gray dark:text-gray-400 flex border-none bg-white dark:bg-gray-700 items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-theme-dark-gray dark:text-white focus:outline-0 focus:ring-2 focus:ring-theme-pink/50 border-none bg-white dark:bg-gray-700 h-full placeholder:text-theme-muted-gray dark:placeholder:text-gray-400 px-4 pl-2 text-base font-normal leading-normal" placeholder="Find an event or couple's name..." value=""/>
+</div>
+</label>
+</div>
+<button class="flex items-center justify-center gap-2 h-12 px-6 bg-theme-pink text-white text-base font-bold rounded-lg shadow-sm hover:bg-theme-pink/90 transition-colors">
+<span class="material-symbols-outlined">add</span>
+<span class="truncate">New Event</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+<div class="p-4">
+<div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-gray-800 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="w-full bg-center bg-no-repeat aspect-[16/10] bg-cover rounded-t-xl" data-alt="Couple smiling at their wedding" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBobJTu5yqNrsVPCYJcAynk5krrjS8Ovco2boT6NjRJm69zigvgYlZJaec7raLioj4RZU4XFTGCWKl9WvhXaMv4tqHII6ikJNXzFUt7Fxb1U_ZCbF1q45TqvBOggetO9OB_QkppaCZ_cBOBTaHj-QbA8XCF-hxXg6rsxD3xHA9V1Yqz5unJngEPleKEBr-1ZjXssyBxcgUgfGCZM9TgucCfVmEmg7V_htaE3kyc-ucc8Oy6-DlHmnQMNZ5feGQ4pw-1kbW7X-YSn0nS");'></div>
+<div class="flex w-full grow flex-col items-stretch justify-center gap-4 p-4">
+<div>
+<p class="text-theme-muted-gray dark:text-gray-400 text-sm font-normal leading-normal">In 3 weeks</p>
+<p class="text-theme-dark-gray dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Amelia &amp; Ben's Wedding</p>
+</div>
+<div class="flex items-center gap-2 text-theme-muted-gray dark:text-gray-300">
+<span class="material-symbols-outlined text-base">location_on</span>
+<p class="text-sm font-normal leading-normal">The Grand Ballroom</p>
+</div>
+<div class="flex items-center gap-3 justify-between mt-2">
+<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-theme-green/20 text-theme-green-800 dark:bg-theme-green/30 dark:text-theme-green-200 text-xs font-medium">
+<span class="size-2 bg-theme-green rounded-full"></span>
+                                            On Track
+                                        </div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-theme-pink/20 text-theme-pink text-sm font-medium leading-normal hover:bg-theme-pink/30 transition-colors">
+<span class="truncate">View Details</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4">
+<div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-gray-800 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="w-full bg-center bg-no-repeat aspect-[16/10] bg-cover rounded-t-xl" data-alt="Outdoor wedding venue with flowers" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCWe7aOxVYRRZNxzaWD68HV3DDhSC7hTS03i_xv9N9EmmT-W5mqx41oxjlQ2hayu99VloJVSs0o4Drzwaa-r73Uuba0LTg6mOnLnouqoJDbtdWcuzK4SmvPcAKVSIhl8jyJ8ny41q0BPgRSrnA8ep8lz5kuGwfu398hjxM5sklyEf7eEUqF087PBkrLaZ1s0Q4bUc26239NSGdXeUROldZHK3dwFAzNPX4y6hiL_poWb7xKvb9z9ZI7Eze7SC41O30Cnl03gTHFfY2X");'></div>
+<div class="flex w-full grow flex-col items-stretch justify-center gap-4 p-4">
+<div>
+<p class="text-theme-muted-gray dark:text-gray-400 text-sm font-normal leading-normal">In 2 months</p>
+<p class="text-theme-dark-gray dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Sophia &amp; Leo's Celebration</p>
+</div>
+<div class="flex items-center gap-2 text-theme-muted-gray dark:text-gray-300">
+<span class="material-symbols-outlined text-base">location_on</span>
+<p class="text-sm font-normal leading-normal">Vineyard Estates</p>
+</div>
+<div class="flex items-center gap-3 justify-between mt-2">
+<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-theme-pink/20 text-theme-pink-800 dark:bg-theme-pink/30 dark:text-theme-pink-200 text-xs font-medium">
+<span class="size-2 bg-theme-pink rounded-full"></span>
+                                            Needs Attention
+                                        </div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-theme-pink/20 text-theme-pink text-sm font-medium leading-normal hover:bg-theme-pink/30 transition-colors">
+<span class="truncate">View Details</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4">
+<div class="flex flex-col items-stretch justify-start rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] bg-white dark:bg-gray-800 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="w-full bg-center bg-no-repeat aspect-[16/10] bg-cover rounded-t-xl" data-alt="Wedding rings on a book" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDWbocaPhfxrlVKp8X1L6pAnNXEemMKGtQ1wuD2PcmPZpi65pxAL2zXpTmWgcGTpGyaF9ZQgPdqHXB78XYQFYGKe8QkKq1GlQv9xjmD629o8VQT3N1Jn7FnKmFX06CUhnrAYfqAkE63n9sE7zEvxj3Sj3Ye82p8prygBJAu5zxnGDRedueelJAALtCTO078qPrqCHZrhE6tOpXO8rplnp3CH4zkFwqh0Me-RMTwSGBVWEIDQrITuyL5OqcTXeso_IQ_8dtQmhP_ZQ9Y");'></div>
+<div class="flex w-full grow flex-col items-stretch justify-center gap-4 p-4">
+<div>
+<p class="text-theme-muted-gray dark:text-gray-400 text-sm font-normal leading-normal">In 5 months</p>
+<p class="text-theme-dark-gray dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Chloe &amp; Noah's Union</p>
+</div>
+<div class="flex items-center gap-2 text-theme-muted-gray dark:text-gray-300">
+<span class="material-symbols-outlined text-base">location_on</span>
+<p class="text-sm font-normal leading-normal">Lakeside Pavilion</p>
+</div>
+<div class="flex items-center gap-3 justify-between mt-2">
+<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-500/20 text-gray-800 dark:bg-gray-500/30 dark:text-gray-200 text-xs font-medium">
+<span class="size-2 bg-gray-500 rounded-full"></span>
+                                            Just Started
+                                        </div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-theme-pink/20 text-theme-pink text-sm font-medium leading-normal hover:bg-theme-pink/30 transition-colors">
+<span class="truncate">View Details</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden flex-col items-center justify-center text-center p-12 mt-10 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800/50">
+<span class="material-symbols-outlined text-6xl text-theme-pink mb-4">celebration</span>
+<h3 class="text-2xl font-bold text-theme-dark-gray dark:text-white mb-2">Ready to Plan?</h3>
+<p class="text-theme-muted-gray dark:text-gray-400 max-w-md mb-6">You don't have any upcoming events yet. Get started by creating a new event for a happy couple!</p>
+<button class="flex items-center justify-center gap-2 h-12 px-6 bg-theme-pink text-white text-base font-bold rounded-lg shadow-sm hover:bg-theme-pink/90 transition-colors">
+<span class="material-symbols-outlined">add</span>
+<span class="truncate">Create Your First Event</span>
+</button>
+</div>
+</main>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>
