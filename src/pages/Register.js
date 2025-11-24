@@ -107,22 +107,57 @@ function Register() {
         }
 
         try {
-            const res = await fetch("http://localhost:8080/api/auth/register", {
+            const registerRes = await fetch("http://localhost:8080/api/auth/register", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({name, email, password}),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    password: formData.password,
+                }),
             });
 
-            const data = await res.json();
-            if (res.ok) {
-                localStorage.setItem("user", JSON.stringify({
-                    id: data.id,
-                    name: data.name,
-                    email: data.email
-                }));
+            let registerData = {};
+            try {
+                registerData = await registerRes.json();
+            } catch (err) {
+                console.warn("Empty or invalid JSON from register", err);
+            }
+
+            if (!registerRes.ok) {
+                backendErrorMessage(registerData, registerRes);
+                return;
+            }
+
+            const loginRes = await fetch("http://localhost:8080/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password,
+                }),
+            });
+
+            let loginData = {};
+            try {
+                loginData = await loginRes.json();
+            } catch (err) {
+                console.warn("Empty or invalid JSON from login", err);
+            }
+
+            if (loginRes.ok) {
+                localStorage.setItem("token", loginData.token);
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify({
+                        id: loginData.id,
+                        name: loginData.name,
+                        email: loginData.email,
+                    })
+                );
                 navigate("/home", {replace: true});
             } else {
-                backendErrorMessage(data, res);
+                backendErrorMessage(loginData, loginRes);
             }
         } catch (err) {
             console.error("Network error:", err);
