@@ -10,6 +10,7 @@ import ChangePassword from "./pages/ChangePassword";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import Invitation from "./pages/Invitation";
 
 function App() {
     return (
@@ -43,6 +44,15 @@ function App() {
                             element={
                                 <ProtectedRoute>
                                     <ChangePassword />
+                                </ProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="/invite"
+                            element={
+                                <ProtectedRoute>
+                                    <Invitation />
                                 </ProtectedRoute>
                             }
                         />
