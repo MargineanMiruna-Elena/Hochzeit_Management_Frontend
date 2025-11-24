@@ -1,14 +1,15 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const statusStyles = {
   onTrack: {
-    wrapper: "bg-green-100 text-green-800",
-    dot: "bg-green-500",
+    wrapper: "bg-theme-green/20 text-theme-green",
+    dot: "bg-theme-green",
     label: "On Track",
   },
   attention: {
-    wrapper: "bg-pink-100 text-pink-700",
-    dot: "bg-pink-500",
+    wrapper: "bg-theme-pink/20 text-theme-pink",
+    dot: "bg-theme-pink",
     label: "Needs Attention",
   },
   started: {
@@ -18,11 +19,11 @@ const statusStyles = {
   },
 };
 
-export default function EventCard({ image, dateText, title, location, status = "onTrack" }) {
+export default function EventCard({ id, image, dateText, title, location, status = "onTrack" }) {
   const s = statusStyles[status] || statusStyles.onTrack;
   return (
     <div className="p-4">
-      <div className="flex flex-col rounded-xl shadow hover:shadow-lg hover:-translate-y-1 transition bg-white">
+      <div className="flex flex-col rounded-xl shadow transition-transform transition-shadow duration-300 ease-out hover:-translate-y-2 hover:shadow-xl bg-white">
         <div
           className="w-full bg-center bg-no-repeat aspect-[16/10] bg-cover rounded-t-xl"
           style={{ backgroundImage: `url(${image})` }}
@@ -44,9 +45,12 @@ export default function EventCard({ image, dateText, title, location, status = "
               <span className={`size-2 rounded-full ${s.dot}`}></span>
               {s.label}
             </div>
-            <button className="flex items-center justify-center h-10 px-4 rounded-lg bg-pink-100 text-pink-600 text-sm font-medium hover:bg-pink-200 transition">
+            <Link
+              to={`/events/${id}`}
+              className="flex items-center justify-center h-10 px-4 rounded-lg bg-theme-pink text-white text-sm font-semibold hover:opacity-90 transition"
+            >
               View Details
-            </button>
+            </Link>
           </div>
         </div>
       </div>
