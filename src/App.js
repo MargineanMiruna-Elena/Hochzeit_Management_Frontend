@@ -1,24 +1,20 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@material-tailwind/react";
-import "./App.css";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
-import ProtectedRoute from "./ProtectedRoute";
 import ChangePassword from "./pages/ChangePassword";
 import EventDetails from "./pages/EventDetails";
 import CreateEvent from "./pages/CreateEvent";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
+import Invitation from "./pages/Invitation";
+
 function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    useEffect(() => {
-        const user = localStorage.getItem("user");
-        setIsLoggedIn(!!user);
-    }, []);
-
     return (
         <ThemeProvider>
             <BrowserRouter>
