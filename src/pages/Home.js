@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardHeader from "../components/DashboardHeader";
 import SearchBar from "../components/SearchBar";
 import EventCard from "../components/EventCard";
@@ -14,7 +15,9 @@ export default function Home() {
     }, []);
 
     const [query, setQuery] = useState("");
-    const [events] = useState([
+    const navigate = useNavigate();
+
+    const baseEvents = [
         {
             id: 1,
             image:
@@ -42,7 +45,17 @@ export default function Home() {
             location: "Lakeside Pavilion",
             status: "started",
         },
-    ]);
+    ];
+
+    const createdEvents = useMemo(() => {
+        try {
+            return JSON.parse(localStorage.getItem("createdEvents")) || [];
+        } catch {
+            return [];
+        }
+    }, []);
+
+    const events = [...createdEvents, ...baseEvents];
 
     const filtered = events.filter(
         (e) =>
@@ -65,7 +78,11 @@ export default function Home() {
                                 <div className="flex-1 w-full max-w-md">
                                     <SearchBar value={query} onChange={setQuery} />
                                 </div>
-                                <button className="flex items-center justify-center gap-2 h-12 px-6 bg-pink-500 text-white text-base font-bold rounded-lg shadow-sm hover:bg-pink-600 transition">
+                                <button
+                                    type="button"
+                                    onClick={() => navigate("/events/new")}
+                                    className="flex items-center justify-center gap-2 h-12 px-6 bg-pink-500 text-white text-base font-bold rounded-lg shadow-sm hover:bg-pink-600 transition"
+                                >
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                     </svg>
