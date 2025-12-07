@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Card, CardBody, Radio, Typography} from "@material-tailwind/react";
+import {Button, Card, CardBody, Checkbox, Radio, Typography, Select, Option} from "@material-tailwind/react";
 import {CalendarIcon, CheckIcon, MapPinIcon, UserIcon, XMarkIcon} from "@heroicons/react/16/solid";
 
 function Invitation() {
@@ -8,7 +8,8 @@ function Invitation() {
     const [eventDetails, setEventDetails] = useState(null);
     const [accepted, setAccepted] = useState(false);
     const [declined, setDeclined] = useState(false);
-    const [menuType, setMenuType] = useState("");
+    const [foodPreferences, setFoodPreferences] = useState([]);
+    const [transportationMethod, setTransportationMethod] = useState("");
     const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
@@ -28,11 +29,17 @@ function Invitation() {
 
         const fetchData = async () => {
             try {
-                const res = await fetch(`/api/invitation?token=${token}`);
+                const res = await fetch(`http://localhost:8080/api/invitation?token=${token}`);
+                
+                if (!res.ok) {
+                    throw new Error('Failed to fetch invitation details');
+                }
+                
                 const data = await res.json();
                 setEventDetails(data);
             } catch (err) {
                 console.error("Error fetching invitation:", err);
+                setEventDetails(null);
             } finally {
                 setLoading(false);
             }
@@ -41,37 +48,35 @@ function Invitation() {
         fetchData();
     }, [token]);
 
-    useEffect(() => {
-        if (loading === false && !eventDetails) {
-            setEventDetails({
-                image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBobJTu5yqNrsVPCYJcAynk5krrjS8Ovco2boT6NjRJm69zigvgYlZJaec7raLioj4RZU4XFTGCWKl9WvhXaMv4tqHII6ikJNXzFUt7Fxb1U_ZCbF1q45TqvBOggetO9OB_QkppaCZ_cBOBTaHj-QbA8XCF-hxXg6rsxD3xHA9V1Yqz5unJngEPleKEBr-1ZjXssyBxcgUgfGCZM9TgucCfVmEmg7V_htaE3kyc-ucc8Oy6-DlHmnQMNZ5feGQ4pw-1kbW7X-YSn0nS",
-                title: "Amelia and Ben's Wedding",
-                organizer: "Amelia and Ben",
-                date: "19 July 2026",
-                location: "The Grand Ballroom",
-                description: "We are thrilled to have you..."
-            });
-        }
-    }, [loading, eventDetails]);
-
     const handleSubmit = async () => {
-        if (!menuType && accepted) return;
-
         try {
-            const res = await fetch("/api/invitation/rsvp", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    token,
-                    accept: accepted,
-                    menu: menuType || null,
-                }),
-            });
+            const payload = {
+                accept: accepted,
+            };
+            
+            if (accepted && eventDetails.askFoodPreferences) {
+                payload.foodPreferences = foodPreferences;
+            }
+            
+            if (accepted && eventDetails.askTransportation) {
+                payload.transportationMethod = transportationMethod;
+            }
+            
+            const res = await fetch(`http://localhost:8080/api/invitation/rsvp?token=${token}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+            if (!res.ok) {
+                throw new Error('Failed to submit RSVP');
+            }
 
             await res.json();
             setSubmitted(true);
         } catch (err) {
             console.error("Error submitting answer:", err);
+            alert("Failed to submit RSVP. Please try again.");
         }
     };
 
@@ -80,9 +85,34 @@ function Invitation() {
         setDeclined(false);
     };
 
-    const handleDecline = () => {
+    const handleDecline = async () => {
         setDeclined(true);
         setAccepted(false);
+        
+        try {
+            const res = await fetch(`/api/invitation/rsvp?token=${token}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ accept: false }),
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to submit decline');
+            }
+
+            setSubmitted(true);
+        } catch (err) {
+            console.error("Error submitting decline:", err);
+            alert("Failed to submit response. Please try again.");
+        }
+    };
+
+    const toggleFoodPreference = (value) => {
+        setFoodPreferences(prev => 
+            prev.includes(value) 
+                ? prev.filter(p => p !== value)
+                : [...prev, value]
+        );
     };
 
     if (loading) {
@@ -127,18 +157,16 @@ function Invitation() {
                         className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-4 left-6 text-pink-600">
+                    <div className="absolute bottom-4 left-6 text-white">
                         <h1 className="text-3xl font-bold">{eventDetails.title}</h1>
                     </div>
                 </div>
 
                 <CardBody className="space-y-6">
-
                     <p className="leading-relaxed text-gray-700">
                         {eventDetails.description}
                     </p>
 
-                    {/* DETAILS */}
                     <div className="space-y-3 border-l-4 border-primary pl-4">
                         <DetailItem
                             icon={<UserIcon className="h-5 w-5 text-primary mt-0.5" />}
@@ -182,15 +210,16 @@ function Invitation() {
                                 Decline
                             </Button>
                         </div>
-                    ) : declined ? (
-                        <DeclinedCard />
-                    ) : (
-                        <MenuSelector
-                            menuType={menuType}
-                            setMenuType={setMenuType}
+                    ) : accepted ? (
+                        <PreferencesForm
+                            eventDetails={eventDetails}
+                            foodPreferences={foodPreferences}
+                            toggleFoodPreference={toggleFoodPreference}
+                            transportationMethod={transportationMethod}
+                            setTransportationMethod={setTransportationMethod}
                             onSubmit={handleSubmit}
                         />
-                    )}
+                    ) : null}
                 </CardBody>
             </Card>
         </div>
@@ -209,75 +238,83 @@ function DetailItem({ icon, label, value }) {
     );
 }
 
-function DeclinedCard() {
-    return (
-        <Card className="p-6 bg-red-50 border border-red-200 text-center">
-            <CardBody>
-                <XMarkIcon className="h-12 w-12 text-red-600 mx-auto mb-3" />
-                <Typography variant="h6" className="mb-2 font-semibold">
-                    Invitation Declined
-                </Typography>
-                <Typography color="gray">
-                    You've declined this invitation. We hope to see you at future events!
-                </Typography>
-            </CardBody>
-        </Card>
-    );
-}
-
-function MenuSelector({ menuType, setMenuType, onSubmit }) {
-    const menus = [
-        {
-            key: "vegetarian menu",
-            desc: "Plant-based dishes with fresh seasonal vegetables",
-        },
-        {
-            key: "meat menu",
-            desc: "Grilled meats with traditional sides",
-        },
-        {
-            key: "children menu",
-            desc: "Kid-friendly meals with familiar flavors",
-        },
-    ];
+function PreferencesForm({ 
+    eventDetails, 
+    foodPreferences, 
+    toggleFoodPreference, 
+    transportationMethod, 
+    setTransportationMethod, 
+    onSubmit 
+}) {
+    const canSubmit = 
+        (!eventDetails.askFoodPreferences || foodPreferences.length > 0) &&
+        (!eventDetails.askTransportation || transportationMethod);
 
     return (
         <Card className="p-3 bg-pink-50 rounded-lg">
-            <CardBody className="space-y-2">
+            <CardBody className="space-y-4">
                 <Typography variant="h6" className="font-semibold">
-                    Select Your Menu Preference
+                    Please Confirm Your Details
                 </Typography>
 
-                <div className="space-y-1">
-                    {menus.map((m) => (
-                        <label
-                            key={m.key}
-                            className="flex items-start p-3 rounded-md hover:bg-pink-100 cursor-pointer"
-                        >
-                            <Radio
-                                name="menu"
-                                value={m.key}
-                                checked={menuType === m.key}
-                                onChange={() => setMenuType(m.key)}
-                                color="pink"
-                                className="accent-pink-600 w-5 h-5"
-                            />
-                            <div className="ml-3">
-                                <Typography className="font-medium capitalize">
-                                    {m.key}
-                                </Typography>
-                                <Typography color="gray" variant="small">
-                                    {m.desc}
-                                </Typography>
-                            </div>
-                        </label>
-                    ))}
-                </div>
+                {/* Food Preferences */}
+                {eventDetails.askFoodPreferences && (
+                    <div className="space-y-2">
+                        <Typography className="font-medium text-sm text-gray-700">
+                            Food Preferences *
+                        </Typography>
+                        <div className="space-y-2">
+                            {eventDetails.availableFoodPreferences?.map((option) => (
+                                <label
+                                    key={option.value}
+                                    className="flex items-center p-3 rounded-md hover:bg-pink-100 cursor-pointer"
+                                >
+                                    <Checkbox
+                                        color="pink"
+                                        checked={foodPreferences.includes(option.value)}
+                                        onChange={() => toggleFoodPreference(option.value)}
+                                    />
+                                    <Typography className="ml-2">
+                                        {option.label}
+                                    </Typography>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Transportation Method */}
+                {eventDetails.askTransportation && (
+                    <div className="space-y-2">
+                        <Typography className="font-medium text-sm text-gray-700">
+                            Transportation Method *
+                        </Typography>
+                        <div className="space-y-2">
+                            {eventDetails.availableTransportationMethods?.map((option) => (
+                                <label
+                                    key={option.value}
+                                    className="flex items-center p-3 rounded-md hover:bg-pink-100 cursor-pointer"
+                                >
+                                    <Radio
+                                        name="transportation"
+                                        color="pink"
+                                        checked={transportationMethod === option.value}
+                                        onChange={() => setTransportationMethod(option.value)}
+                                    />
+                                    <Typography className="ml-2">
+                                        {option.label}
+                                    </Typography>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <Button
                     onClick={onSubmit}
                     className="w-full h-12 bg-pink-600"
                     size="lg"
+                    disabled={!canSubmit}
                 >
                     Confirm RSVP
                 </Button>
