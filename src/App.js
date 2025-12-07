@@ -13,6 +13,7 @@ import CreateEvent from "./pages/CreateEvent";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import Invitation from "./pages/Invitation";
+import MyEventDetails from "./pages/MyEventDetails";
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -53,10 +54,26 @@ function App() {
                             }
                         />
                         <Route
+                            path="/invite"
+                            element={
+                                <ProtectedRoute>
+                                    <Invitation />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
                             path="/events/:id"
                             element={
                                 <ProtectedRoute>
                                     <EventDetails />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/my-events/:id"
+                            element={
+                                <ProtectedRoute>
+                                    <MyEventDetails />
                                 </ProtectedRoute>
                             }
                         />
