@@ -21,7 +21,11 @@ export default function MyEventDetails() {
     const [isEditing, setIsEditing] = useState(false);
     const [loadingEvent, setLoadingEvent] = useState(true);
     const [errorEvent, setErrorEvent] = useState("");
-    const formatDate = (date) => new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    const formatDate = (date) => new Date(date).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
     const fileInputRef = useRef(null);
 
     const handleButtonClick = () => {
@@ -74,10 +78,56 @@ export default function MyEventDetails() {
         setEditedEvent(event);
         setIsEditing(false);
     };
-    const handleSave = () => {
-        setEvent(editedEvent);
-        setIsEditing(false);
+    const handleSave = async () => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const eventUpdateRes = await fetch(`http://localhost:8080/api/events/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    name: editedEvent.name,
+                    description: editedEvent.description,
+                    startDate: editedEvent.startDate,
+                    endDate: editedEvent.endDate,
+                    locationId: editedEvent.locationId
+                }),
+            });
+
+            if (!eventUpdateRes.ok) {
+                throw new Error("Failed to update the event");
+            }
+
+            const locationUpdateRes = await fetch(
+                `http://localhost:8080/api/locations/${editedEvent.locationId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        name: editedEvent.locationName,
+                        address: editedEvent.locationAddress,
+                    }),
+                }
+            );
+
+            if (!locationUpdateRes.ok) {
+                throw new Error("Failed to update the location");
+            }
+
+            setEvent(editedEvent);
+            setIsEditing(false);
+        } catch (err) {
+            console.error(err);
+            alert(err.message);
+        }
     };
+
     const handleChange = (field, value) => {
         setEditedEvent((prev) => ({...prev, [field]: value}));
     };
@@ -153,156 +203,142 @@ export default function MyEventDetails() {
                                 )}
                             </div>
                             <div className="grid gap-4 md:grid-cols-2">
-                                <div
-                                    className="bg-card rounded-xl p-3 shadow-card border border-border/50 flex flex-column">
-                                    <div className="px-3 pt-3 rounded-lg bg-accent">
-                                        <CalendarIcon className="h-6 w-6 text-pink-600"/>
+                                <div className="space-y-2">
+                                    <div
+                                        className="bg-card rounded-xl p-3 shadow-card border border-border/50 flex flex-column">
+                                        <div className="px-3 pt-3 rounded-lg bg-accent">
+                                            <CalendarIcon className="h-6 w-6 text-pink-600"/>
+                                        </div>
+                                        <div className="flex-1 space-y-1 p-3">
+                                            <h3 className="font-medium text-lg tracking-wide">Event Dates</h3>
+                                            {isEditing ? (
+                                                <div className="space-y-2">
+                                                    <Input
+                                                        type="date"
+                                                        value={editedEvent.startDate}
+                                                        onChange={(e) => handleChange("startDate", e.target.value)}
+                                                    />
+                                                    <Input
+                                                        type="date"
+                                                        value={editedEvent.endDate}
+                                                        onChange={(e) => handleChange("endDate", e.target.value)}
+                                                    />
+                                                    <p className="text-sm">
+                                                        Status: {status === "past" ? "Past" : status === "ongoing" ? "Ongoing" : "Upcoming"}
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <p className="font-semibold text-md">{formatDate(displayEvent.startDate)} - {formatDate(displayEvent.endDate)}</p>
+                                                    <p className="text-sm">
+                                                        Status: {status === "past" ? "Past" : status === "ongoing" ? "Ongoing" : "Upcoming"}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="flex-1 space-y-1 p-3">
-                                        <h3 className="font-medium text-lg tracking-wide">Event Dates</h3>
+
+                                    <div
+                                        className="bg-card rounded-xl p-3 shadow-card border border-border/50 flex flex-column">
+                                        <div className="px-3 pt-3 rounded-lg bg-accent">
+                                            <MapPinIcon className="h-6 w-6 text-pink-600"/>
+                                        </div>
+                                        <div className="flex-1 space-y-1 p-3">
+                                            <h3 className="font-medium text-lg tracking-wide">Location</h3>
+                                            {isEditing ? (
+                                                <div className="space-y-2">
+                                                    <Input
+                                                        value={editedEvent.locationName}
+                                                        onChange={(e) => handleChange("locationName", e.target.value)}
+                                                        placeholder="Venue name"
+                                                    />
+                                                    <Input
+                                                        value={editedEvent.locationAddress}
+                                                        onChange={(e) => handleChange("locationAddress", e.target.value)}
+                                                        placeholder="Address"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <p className="font-medium">{displayEvent.locationName}</p>
+                                                    <p className="text-sm">{displayEvent.locationAddress}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
+                                        <h3 className="font-medium text-lg tracking-wide">Event Description</h3>
                                         {isEditing ? (
-                                            <div className="space-y-2">
-                                                <Input
-                                                    type="date"
-                                                    value={editedEvent.startDate}
-                                                    onChange={(e) => handleChange("startDate", e.target.value)}
-                                                />
-                                                <Input
-                                                    type="date"
-                                                    value={editedEvent.endDate}
-                                                    onChange={(e) => handleChange("endDate", e.target.value)}
-                                                />
-                                                <p className="text-sm">
-                                                    Status: {status === "past" ? "Past" : status === "ongoing" ? "Ongoing" : "Upcoming"}
-                                                </p>
-                                            </div>
+                                            <Textarea value={editedEvent.description}
+                                                      onChange={(e) => handleChange("description", e.target.value)}/>
                                         ) : (
-                                            <div>
-                                                <p className="font-semibold text-md">{formatDate(displayEvent.startDate)} - {formatDate(displayEvent.endDate)}</p>
-                                                <p className="text-sm">
-                                                    Status: {status === "past" ? "Past" : status === "ongoing" ? "Ongoing" : "Upcoming"}
-                                                </p>
-                                            </div>
+                                            <p>{displayEvent.description}</p>
                                         )}
                                     </div>
                                 </div>
+                                <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
+                                    <h3 className="font-medium text-lg tracking-wide">Event Image</h3>
+                                    <div className="space-y-4">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            ref={fileInputRef}
+                                            className="hidden"
+                                            onChange={handleFileChange}
+                                        />
 
-                                <div
-                                    className="bg-card rounded-xl p-3 shadow-card border border-border/50 flex flex-column">
-                                    <div className="px-3 pt-3 rounded-lg bg-accent">
-                                        <MapPinIcon className="h-6 w-6 text-pink-600"/>
-                                    </div>
-                                    <div className="flex-1 space-y-1 p-3">
-                                        <h3 className="font-medium text-lg tracking-wide">Location</h3>
-                                        {isEditing ? (
-                                            <div className="space-y-2">
-                                                <Input
-                                                    value={editedEvent.locationName}
-                                                    onChange={(e) => handleChange("locationName", e.target.value)}
-                                                    placeholder="Venue name"
+                                        {isEditing && (
+                                            <Button onClick={handleButtonClick}
+                                                    className="text-pink-600 p-3 mx-1 rounded">
+                                                Choose File
+                                            </Button>
+                                        )}
+
+                                        {image && (
+                                            <Button
+                                                onClick={() => setPreviewVisible(!previewVisible)}
+                                                className="bg-pink-600 text-white p-3 mx-1 rounded"
+                                            >
+                                                {previewVisible ? "Close" : "Preview"}
+                                            </Button>
+                                        )}
+
+                                        {!isEditing && !image && (
+                                            <div className="text-gray-500 text-sm">No image yet.</div>
+                                        )}
+
+                                        {previewVisible && image && (
+                                            <div className="mt-2">
+                                                <img
+                                                    src={image}
+                                                    alt="Preview"
+                                                    className="max-w-full h-auto rounded border border-gray-300 shadow"
                                                 />
-                                                <Input
-                                                    value={editedEvent.locationAddress}
-                                                    onChange={(e) => handleChange("locationAddress", e.target.value)}
-                                                    placeholder="Address"
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <p className="font-medium">{displayEvent.locationName}</p>
-                                                <p className="text-sm">{displayEvent.locationAddress}</p>
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-                                <h3 className="font-medium text-lg tracking-wide">Event Description</h3>
-                                {isEditing ? (
-                                    <Textarea value={editedEvent.description}
-                                              onChange={(e) => handleChange("description", e.target.value)}/>
-                                ) : (
-                                    <p>{displayEvent.description}</p>
-                                )}
-                            </div>
 
                             <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
                                 <h3 className="font-medium text-lg tracking-wide">Contact Organizers</h3>
-                                {isEditing ? (
-                                    <div className="space-y-1">
-                                        <Input
-                                            type="email"
-                                            value={editedEvent.emailOrg1}
-                                            onChange={(e) => handleChange("emailOrg1", e.target.value)}
-                                            placeholder="Primary email"
-                                        />
-                                        <Input
-                                            type="email"
-                                            value={editedEvent.emailOrg2}
-                                            onChange={(e) => handleChange("emailOrg2", e.target.value)}
-                                            placeholder="Secondary email"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div>
-                                        {displayEvent.emailOrg1 && (
-                                            <div
-                                               className="px-3 py-1 bg-secondary rounded-lg flex items-center gap-1">
-                                                <EnvelopeIcon className="h-5 w-5 text-pink-600"/> {displayEvent.emailOrg1}
-                                            </div>
-                                        )}
-                                        {displayEvent.emailOrg2 && (
-                                            <div
-                                               className="px-3 py-1 bg-secondary rounded-lg flex items-center gap-1">
-                                                <EnvelopeIcon className="h-5 w-5 text-pink-600"/> {displayEvent.emailOrg2}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-                                <h3 className="font-medium text-lg tracking-wide">Event Image</h3>
-                                <div className="space-y-4">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        ref={fileInputRef}
-                                        className="hidden"
-                                        onChange={handleFileChange}
-                                    />
-
-                                    {isEditing && (
-                                        <Button onClick={handleButtonClick} className="text-pink-600 p-3 mx-1 rounded">
-                                            Choose File
-                                        </Button>
+                                <div>
+                                    {displayEvent.emailOrg1 && (
+                                        <div
+                                            className="px-3 py-1 bg-secondary rounded-lg flex items-center gap-1">
+                                            <EnvelopeIcon className="h-5 w-5 text-pink-600"/> {displayEvent.emailOrg1}
+                                        </div>
                                     )}
-
-                                    {image && (
-                                        <Button
-                                            onClick={() => setPreviewVisible(!previewVisible)}
-                                            className="bg-pink-600 text-white p-3 mx-1 rounded"
-                                        >
-                                            {previewVisible ? "Close" : "Preview"}
-                                        </Button>
-                                    )}
-
-                                    {!isEditing && !image && (
-                                        <div className="text-gray-500 text-sm">No image yet.</div>
-                                    )}
-
-                                    {previewVisible && image && (
-                                        <div className="mt-2">
-                                            <img
-                                                src={image}
-                                                alt="Preview"
-                                                className="max-w-full h-auto rounded border border-gray-300 shadow"
-                                            />
+                                    {displayEvent.emailOrg2 && (
+                                        <div
+                                            className="px-3 py-1 bg-secondary rounded-lg flex items-center gap-1">
+                                            <EnvelopeIcon className="h-5 w-5 text-pink-600"/> {displayEvent.emailOrg2}
                                         </div>
                                     )}
                                 </div>
                             </div>
+
 
                             <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
                                 <ParticipantsManagement/>

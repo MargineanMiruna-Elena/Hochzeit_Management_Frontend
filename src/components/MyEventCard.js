@@ -45,13 +45,12 @@ export default function MyEventCard({
     }
     const s = statusStyles[status] || statusStyles.onTrack;
 
-    const formatDate = (date) => new Date(date).toLocaleDateString("ro-RO", { day: "2-digit", month: "2-digit", year: "numeric" });
+    const formatDate = (date) => new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
     const dateText = `${formatDate(startDate)} - ${formatDate(endDate)}`;
 
     return (
         <div className="p-4">
             <div className="flex flex-col rounded-xl shadow transition-transform transition-shadow duration-300 ease-out hover:-translate-y-2 hover:shadow-xl bg-white">
-                {/* Imagine sau fundal roz */}
                 <div
                     className={`w-full aspect-[16/10] rounded-t-xl flex items-center justify-center ${!image ? "bg-pink-100" : ""}`}
                     style={image ? { backgroundImage: `url(${image})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
@@ -60,7 +59,6 @@ export default function MyEventCard({
                 </div>
 
                 <div className="flex flex-col gap-4 p-4">
-                    {/* Titlu și descriere */}
                     <div>
                         <p className="text-gray-500 text-sm">{dateText}</p>
                         <p className="text-lg font-bold leading-tight text-gray-900">{name}</p>
