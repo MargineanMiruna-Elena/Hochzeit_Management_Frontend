@@ -12,7 +12,7 @@ import {UserCircleIcon} from "@heroicons/react/24/solid";
 function Profile() {
     const [user, setUser] = useState({});
     const [form, setForm] = useState({name: "", email: ""});
-    const [errors, setErrors] = useState({name: "", email: "", backend: ""});
+    const [errors, setErrors] = useState({name: "", backend: ""});
     const [isEditing, setIsEditing] = useState(false);
     const navigate = useNavigate();
 
@@ -30,10 +30,6 @@ function Profile() {
 
         if (name === "name" && !value) {
             message = "Name is required.";
-        }
-
-        if (name === "email") {
-            if (!value) message = "Email is required."; else if (!/\S+@\S+\.\S+/.test(value)) message = "Invalid email address.";
         }
 
         setErrors((prev) => ({...prev, [name]: message}));
@@ -77,16 +73,25 @@ function Profile() {
             if (!isNameValid || !isEmailValid) return;
 
             try {
-                const res = await fetch(`http://localhost:8080/api/users/${user.id}`, {
+                const token = localStorage.getItem("token");
+                const res = await fetch(`http://localhost:8080/api/update/me`, {
                     method: "PUT",
-                    headers: {"Content-Type": "application/json"},
+                    headers: {"Content-Type": "application/json", "Authorization": `Bearer ${token}`},
                     body: JSON.stringify({name: form.name, email: form.email}),
                 });
 
                 const data = await res.json();
 
                 if (res.ok) {
-                    localStorage.setItem("user", JSON.stringify(data));
+                    localStorage.setItem(
+                        "user",
+                        JSON.stringify({
+                            id: data.id,
+                            name: data.name,
+                            email: data.email,
+                        })
+                    );
+                    localStorage.setItem("token", data.token)
                     setUser(data);
                     setIsEditing(false);
                     setErrors({name: "", email: "", backend: ""});
@@ -135,22 +140,21 @@ function Profile() {
                                 shadow={false}
                                 className="bg-transparent px-6 pt-6 pb-2"
                             >
-                                <Typography variant="h5" color="blue-gray">
+                                <Typography className="font-medium tracking-wide text-xl">
                                     Personal Information
                                 </Typography>
-                                <Typography variant="small" color="gray">
+                                <Typography variant="small" color="gray" className="text-base">
                                     View and manage your profile details
                                 </Typography>
                             </CardHeader>
 
                             <CardBody className="space-y-1 px-6 pb-6">
-                                <div>
+                                <div className="ml-4">
                                     <Typography
-                                        variant="small"
                                         color="gray"
-                                        className="flex items-center gap-2 mb-1"
+                                        className="flex items-center text-lg font-normal gap-2 mb-1"
                                     >
-                                        <UserCircleIcon className="h-5 w-5 text-pink-600"/>
+                                        <UserCircleIcon className="!h-6 !w-6 text-pink-600"/>
                                         Name
                                     </Typography>
                                     <Input
@@ -162,8 +166,8 @@ function Profile() {
                                         onChange={handleChange}
                                         onBlur={(e) => isEditing && validateField(e.target.name, e.target.value)}
                                         disabled={!isEditing}
-                                        className={`border ${
-                                            !isEditing ? "bg-gray-100 text-gray-500" : "border-pink-600"
+                                        className={`!border !text-base ${
+                                            !isEditing ? "bg-gray-100 text-gray-600 !border-gray-200" : "!border-pink-600"
                                         }`}
                                     />
                                     <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
@@ -171,13 +175,12 @@ function Profile() {
                                     </Typography>
                                 </div>
 
-                                <div>
+                                <div className="ml-4">
                                     <Typography
-                                        variant="small"
                                         color="gray"
-                                        className="flex items-center gap-2 mb-1"
+                                        className="flex items-center text-lg font-normal gap-2 mb-1"
                                     >
-                                        <EnvelopeIcon className="h-5 w-5 text-pink-600"/>
+                                        <EnvelopeIcon className="h-6 w-6 text-pink-600"/>
                                         Email
                                     </Typography>
                                     <Input
@@ -186,22 +189,13 @@ function Profile() {
                                         crossOrigin={undefined}
                                         labelProps={{className: "hidden"}}
                                         value={form.email}
-                                        onChange={handleChange}
-                                        onBlur={(e) => isEditing && validateField(e.target.name, e.target.value)}
-                                        disabled={!isEditing}
-                                        className={`border ${
-                                            !isEditing ? "bg-gray-100 text-gray-500" : "border-pink-600"
-                                        }`}
-
+                                        disabled={true}
+                                        className="!border !text-base bg-gray-100 text-gray-600 !border-gray-200"
                                     />
                                     <Typography className="text-sm h-5 mt-1 ml-2 text-pink-600">
                                         {errors.email || " "}
                                     </Typography>
                                 </div>
-
-                                <Typography className="text-sm h-5 ml-2 text-pink-600">
-                                    {errors.backend || " "}
-                                </Typography>
 
                                 <div className="flex gap-4 pt-2">
                                     {isEditing ? (<>
