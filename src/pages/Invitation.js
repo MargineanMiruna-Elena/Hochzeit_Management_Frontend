@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Card, CardBody, Checkbox, Radio, Typography, Select, Option} from "@material-tailwind/react";
+import {Button, Card, CardBody, Checkbox, Typography} from "@material-tailwind/react";
 import {CalendarIcon, CheckIcon, MapPinIcon, UserIcon, XMarkIcon} from "@heroicons/react/16/solid";
 
 function Invitation() {
@@ -9,7 +9,6 @@ function Invitation() {
     const [accepted, setAccepted] = useState(false);
     const [declined, setDeclined] = useState(false);
     const [foodPreferences, setFoodPreferences] = useState([]);
-    const [transportationMethod, setTransportationMethod] = useState("");
     const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
@@ -36,6 +35,7 @@ function Invitation() {
                 }
                 
                 const data = await res.json();
+                console.log("Event details:", data);
                 setEventDetails(data);
             } catch (err) {
                 console.error("Error fetching invitation:", err);
@@ -49,33 +49,34 @@ function Invitation() {
     }, [token]);
 
     const handleSubmit = async () => {
+        if (eventDetails.askFoodPreferences && foodPreferences.length === 0) {
+            alert("Please select at least one food preference");
+            return;
+        }
+
         try {
             const payload = {
-                accept: accepted,
+                accept: true,
+                foodPreferences: foodPreferences
             };
             
-            if (accepted && eventDetails.askFoodPreferences) {
-                payload.foodPreferences = foodPreferences;
-            }
-            
-            if (accepted && eventDetails.askTransportation) {
-                payload.transportationMethod = transportationMethod;
-            }
+            console.log("Submitting RSVP:", payload);
             
             const res = await fetch(`http://localhost:8080/api/invitation/rsvp?token=${token}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
 
             if (!res.ok) {
                 throw new Error('Failed to submit RSVP');
             }
 
-            await res.json();
+            const data = await res.json();
+            console.log("RSVP response:", data);
             setSubmitted(true);
         } catch (err) {
-            console.error("Error submitting answer:", err);
+            console.error("Error submitting RSVP:", err);
             alert("Failed to submit RSVP. Please try again.");
         }
     };
@@ -90,16 +91,22 @@ function Invitation() {
         setAccepted(false);
         
         try {
-            const res = await fetch(`/api/invitation/rsvp?token=${token}`, {
+            const payload = { accept: false };
+            
+            console.log("Submitting decline:", payload);
+            
+            const res = await fetch(`http://localhost:8080/api/invitation/rsvp?token=${token}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ accept: false }),
+                body: JSON.stringify(payload),
             });
 
             if (!res.ok) {
                 throw new Error('Failed to submit decline');
             }
 
+            const data = await res.json();
+            console.log("Decline response:", data);
             setSubmitted(true);
         } catch (err) {
             console.error("Error submitting decline:", err);
@@ -134,14 +141,34 @@ function Invitation() {
     if (submitted) {
         return (
             <div className="container mx-auto px-4 py-20 max-w-xl">
-                <Card className="p-6 text-center bg-green-50 border border-green-200">
-                    <CheckIcon className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                    <Typography variant="h5" className="font-semibold mb-2">
-                        Thank you for your response!
-                    </Typography>
-                    <Typography color="gray">
-                        Your RSVP has been saved successfully.
-                    </Typography>
+                <Card className={`p-6 text-center ${declined ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'} border`}>
+                    {declined ? (
+                        <>
+                            <XMarkIcon className="h-16 w-16 text-amber-600 mx-auto mb-4" />
+                            <Typography variant="h4" className="font-bold mb-3 text-gray-800">
+                                We're Sorry You Can't Make It
+                            </Typography>
+                            <Typography className="text-gray-700 mb-2 text-lg">
+                                We'll miss you at {eventDetails.title}!
+                            </Typography>
+                            <Typography color="gray" variant="small" className="mt-4">
+                                We hope to see you at future events. Your response has been saved.
+                            </Typography>
+                        </>
+                    ) : (
+                        <>
+                            <CheckIcon className="h-16 w-16 text-green-600 mx-auto mb-4" />
+                            <Typography variant="h4" className="font-bold mb-3 text-gray-800">
+                                Thank You for Your Response!
+                            </Typography>
+                            <Typography className="text-gray-700 text-lg">
+                                We're excited to see you at {eventDetails.title}!
+                            </Typography>
+                            <Typography color="gray" variant="small" className="mt-4">
+                                Your RSVP has been saved successfully.
+                            </Typography>
+                        </>
+                    )}
                 </Card>
             </div>
         );
@@ -150,6 +177,7 @@ function Invitation() {
     return (
         <div className="container mx-auto px-4 py-8 max-w-3xl">
             <Card className="shadow-lg overflow-hidden">
+                {/* Event Image Header */}
                 <div className="relative h-64 w-full">
                     <img
                         src={eventDetails.image}
@@ -158,41 +186,44 @@ function Invitation() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-4 left-6 text-white">
-                        <h1 className="text-3xl font-bold">{eventDetails.title}</h1>
+                        <h1 className="text-3xl font-bold drop-shadow-lg">{eventDetails.title}</h1>
                     </div>
                 </div>
 
                 <CardBody className="space-y-6">
-                    <p className="leading-relaxed text-gray-700">
+                    {/* Event Description */}
+                    <p className="leading-relaxed text-gray-700 text-lg">
                         {eventDetails.description}
                     </p>
 
-                    <div className="space-y-3 border-l-4 border-primary pl-4">
+                    {/* Event Details */}
+                    <div className="space-y-3 border-l-4 border-pink-500 pl-4">
                         <DetailItem
-                            icon={<UserIcon className="h-5 w-5 text-primary mt-0.5" />}
+                            icon={<UserIcon className="h-5 w-5 text-pink-500 mt-0.5" />}
                             label="Organizer"
                             value={eventDetails.organizer}
                         />
 
                         <DetailItem
-                            icon={<CalendarIcon className="h-5 w-5 text-primary mt-0.5" />}
+                            icon={<CalendarIcon className="h-5 w-5 text-pink-500 mt-0.5" />}
                             label="Date & Time"
                             value={eventDetails.date}
                         />
 
                         <DetailItem
-                            icon={<MapPinIcon className="h-5 w-5 text-primary mt-0.5" />}
+                            icon={<MapPinIcon className="h-5 w-5 text-pink-500 mt-0.5" />}
                             label="Location"
                             value={eventDetails.location}
                         />
                     </div>
 
+                    {/* Response Buttons or Form */}
                     {!accepted && !declined ? (
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-4 pt-4">
                             <Button
                                 color="green"
                                 size="lg"
-                                className="flex justify-center gap-2"
+                                className="flex justify-center items-center gap-2"
                                 onClick={handleAccept}
                             >
                                 <CheckIcon className="h-5 w-5" />
@@ -204,19 +235,17 @@ function Invitation() {
                                 variant="outlined"
                                 size="lg"
                                 color="red"
-                                className="flex justify-center gap-2"
+                                className="flex justify-center items-center gap-2"
                             >
                                 <XMarkIcon className="h-5 w-5" />
                                 Decline
                             </Button>
                         </div>
                     ) : accepted ? (
-                        <PreferencesForm
+                        <FoodPreferencesForm
                             eventDetails={eventDetails}
                             foodPreferences={foodPreferences}
                             toggleFoodPreference={toggleFoodPreference}
-                            transportationMethod={transportationMethod}
-                            setTransportationMethod={setTransportationMethod}
                             onSubmit={handleSubmit}
                         />
                     ) : null}
@@ -231,88 +260,55 @@ function DetailItem({ icon, label, value }) {
         <div className="flex items-start gap-3">
             {icon}
             <div>
-                <p className="text-sm text-gray-500">{label}</p>
-                <p className="font-medium">{value}</p>
+                <p className="text-sm text-gray-500 font-medium">{label}</p>
+                <p className="font-semibold text-gray-800">{value}</p>
             </div>
         </div>
     );
 }
 
-function PreferencesForm({ 
-    eventDetails, 
-    foodPreferences, 
-    toggleFoodPreference, 
-    transportationMethod, 
-    setTransportationMethod, 
-    onSubmit 
-}) {
-    const canSubmit = 
-        (!eventDetails.askFoodPreferences || foodPreferences.length > 0) &&
-        (!eventDetails.askTransportation || transportationMethod);
+function FoodPreferencesForm({ eventDetails, foodPreferences, toggleFoodPreference, onSubmit }) {
+    const canSubmit = !eventDetails.askFoodPreferences || foodPreferences.length > 0;
 
     return (
-        <Card className="p-3 bg-pink-50 rounded-lg">
+        <Card className="p-4 bg-pink-50 rounded-lg border border-pink-200">
             <CardBody className="space-y-4">
-                <Typography variant="h6" className="font-semibold">
+                <Typography variant="h6" className="font-bold text-gray-800">
                     Please Confirm Your Details
                 </Typography>
 
-                {/* Food Preferences */}
-                {eventDetails.askFoodPreferences && (
-                    <div className="space-y-2">
-                        <Typography className="font-medium text-sm text-gray-700">
-                            Food Preferences *
+                {eventDetails.askFoodPreferences ? (
+                    <div className="space-y-3">
+                        <Typography className="font-semibold text-sm text-gray-700">
+                            Food Preferences * (select at least one)
                         </Typography>
                         <div className="space-y-2">
                             {eventDetails.availableFoodPreferences?.map((option) => (
                                 <label
                                     key={option.value}
-                                    className="flex items-center p-3 rounded-md hover:bg-pink-100 cursor-pointer"
+                                    className="flex items-center p-3 rounded-md hover:bg-pink-100 cursor-pointer transition-colors"
                                 >
                                     <Checkbox
                                         color="pink"
                                         checked={foodPreferences.includes(option.value)}
                                         onChange={() => toggleFoodPreference(option.value)}
                                     />
-                                    <Typography className="ml-2">
+                                    <Typography className="ml-3 font-medium">
                                         {option.label}
                                     </Typography>
                                 </label>
                             ))}
                         </div>
                     </div>
-                )}
-
-                {/* Transportation Method */}
-                {eventDetails.askTransportation && (
-                    <div className="space-y-2">
-                        <Typography className="font-medium text-sm text-gray-700">
-                            Transportation Method *
-                        </Typography>
-                        <div className="space-y-2">
-                            {eventDetails.availableTransportationMethods?.map((option) => (
-                                <label
-                                    key={option.value}
-                                    className="flex items-center p-3 rounded-md hover:bg-pink-100 cursor-pointer"
-                                >
-                                    <Radio
-                                        name="transportation"
-                                        color="pink"
-                                        checked={transportationMethod === option.value}
-                                        onChange={() => setTransportationMethod(option.value)}
-                                    />
-                                    <Typography className="ml-2">
-                                        {option.label}
-                                    </Typography>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
+                ) : (
+                    <Typography color="gray">
+                        Click below to confirm your attendance.
+                    </Typography>
                 )}
 
                 <Button
                     onClick={onSubmit}
-                    className="w-full h-12 bg-pink-600"
+                    className="w-full h-12 bg-pink-600 hover:bg-pink-700"
                     size="lg"
                     disabled={!canSubmit}
                 >
