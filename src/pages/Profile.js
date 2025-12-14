@@ -91,7 +91,6 @@ function Profile() {
                             email: data.email,
                         })
                     );
-                    localStorage.setItem("token", data.token)
                     setUser(data);
                     setIsEditing(false);
                     setErrors({name: "", email: "", backend: ""});
