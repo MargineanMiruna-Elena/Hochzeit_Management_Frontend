@@ -21,44 +21,32 @@ export default function Home() {
     const [errorMyEvents, setErrorMyEvents] = useState("");
     const navigate = useNavigate();
 
-    const baseEvents = [
-        {
-            id: 1,
-            image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBobJTu5yqNrsVPCYJcAynk5krrjS8Ovco2boT6NjRJm69zigvgYlZJaec7raLioj4RZU4XFTGCWKl9WvhXaMv4tqHII6ikJNXzFUt7Fxb1U_ZCbF1q45TqvBOggetO9OB_QkppaCZ_cBOBTaHj-QbA8XCF-hxXg6rsxD3xHA9V1Yqz5unJngEPleKEBr-1ZjXssyBxcgUgfGCZM9TgucCfVmEmg7V_htaE3kyc-ucc8Oy6-DlHmnQMNZ5feGQ4pw-1kbW7X-YSn0nS",
-            date: Date.now() + 21 * 24 * 60 * 60 * 1000,
-            title: "Amelia & Ben's Wedding",
-            location: "The Grand Ballroom",
-            status: "onTrack",
-        },
-        {
-            id: 2,
-            image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCWe7aOxVYRRZNxzaWD68HV3DDhSC7hTS03i_xv9N9EmmT-W5mqx41oxjlQ2hayu99VloJVSs0o4Drzwaa-r73Uuba0LTg6mOnLnouqoJDbtdWcuzK4SmvPcAKVSIhl8jyJ8ny41q0BPgRSrnA8ep8lz5kuGwfu398hjxM5sklyEf7eEUqF087PBkrLaZ1s0Q4bUc26239NSGdXeUROldZHK3dwFAzNPX4y6hiL_poWb7xKvb9z9ZI7Eze7SC41O30Cnl03gTHFfY2X",
-            date: Date.now() - 60 * 24 * 60 * 60 * 1000,
-            title: "Sophia & Leo's Celebration",
-            location: "Vineyard Estates",
-            status: "attention",
-        },
-    ];
-
-    const createdEvents = useMemo(() => {
-        try {
-            return JSON.parse(localStorage.getItem("createdEvents")) || [];
-        } catch {
-            return [];
-        }
-    }, []);
-
-    const events = [...createdEvents, ...baseEvents];
+    // Removed static baseEvents and localStorage createdEvents to rely on backend data.
+    
+    const events = myEvents;
 
     const filteredEvents = events.filter(
         (e) =>
-            e.title.toLowerCase().includes(query.toLowerCase()) ||
-            e.location.toLowerCase().includes(query.toLowerCase())
+            (e.name || e.title || "").toLowerCase().includes(query.toLowerCase()) ||
+            (e.location || "").toLowerCase().includes(query.toLowerCase())
     );
 
     const now = Date.now();
-    const pastEvents = filteredEvents.filter((e) => e.date && e.date < now);
-    const upcomingEvents = filteredEvents.filter((e) => e.date && e.date >= now);
+    const pastEvents = filteredEvents.filter((e) => {
+        const date = new Date(e.startDate || e.date).getTime();
+        return date < now;
+    });
+    const upcomingEvents = filteredEvents.filter((e) => {
+        const date = new Date(e.startDate || e.date).getTime();
+        return date >= now;
+    });
+
+    // Helper to format date for display
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "";
+        const d = new Date(dateStr);
+        return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    };
 
     useEffect(() => {
         const fetchMyEvents = async () => {
@@ -66,15 +54,36 @@ export default function Home() {
             setErrorMyEvents("");
             try {
                 const token = localStorage.getItem("token");
-                const res = await fetch("http://localhost:8080/api/events/my-events", {
+                const user = JSON.parse(localStorage.getItem("user"));
+                
+                if (!token || !user) return;
+
+                // Fetch events for the logged-in user
+                // Adjust endpoint if necessary. Assuming GET /api/events/user/{userId} or similar exists
+                // based on typical REST patterns, or using the existing /my-events if that's what the backend provides.
+                // The previous code used /api/events/my-events, let's stick to that or try a more standard one if it fails.
+                const res = await fetch(`http://localhost:8080/api/events/user/${user.id}`, {
                     headers: {
                         "Authorization": `Bearer ${token}`,
                     },
                 });
+                
                 if (!res.ok) {
-                    const errText = await res.text();
-                    throw new Error(errText || "Failed to fetch my events");
+                    // Fallback to previous endpoint if the above doesn't exist
+                     const res2 = await fetch("http://localhost:8080/api/events/my-events", {
+                        headers: {
+                            "Authorization": `Bearer ${token}`,
+                        },
+                    });
+                    if(!res2.ok) {
+                         const errText = await res2.text();
+                         throw new Error(errText || "Failed to fetch my events");
+                    }
+                    const data = await res2.json();
+                    setMyEvents(data);
+                    return;
                 }
+                
                 const data = await res.json();
                 setMyEvents(data);
             } catch (err) {
@@ -133,8 +142,16 @@ export default function Home() {
                             <h2 className="text-2xl font-bold mb-4">Past Events</h2>
                             {pastEvents.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {pastEvents.map((ev) => (
-                                        <EventCard key={ev.id} {...ev} />
+                                    {pastEvents.map((event) => (
+                                        <EventCard
+                                            key={event.id}
+                                            id={event.id}
+                                            image={event.imageUrl || event.image}
+                                            dateText={formatDate(event.startDate || event.date)}
+                                            title={event.name || event.title}
+                                            location={event.location || "Unknown Location"}
+                                            status={event.status || "started"}
+                                        />
                                     ))}
                                 </div>
                             ) : (
@@ -146,8 +163,16 @@ export default function Home() {
                             <h2 className="text-2xl font-bold mb-4">Upcoming Events</h2>
                             {upcomingEvents.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {upcomingEvents.map((ev) => (
-                                        <EventCard key={ev.id} {...ev} />
+                                    {upcomingEvents.map((event) => (
+                                        <EventCard
+                                            key={event.id}
+                                            id={event.id}
+                                            image={event.imageUrl || event.image}
+                                            dateText={formatDate(event.startDate || event.date)}
+                                            title={event.name || event.title}
+                                            location={event.location || "Unknown Location"}
+                                            status={event.status || "started"}
+                                        />
                                     ))}
                                 </div>
                             ) : (
