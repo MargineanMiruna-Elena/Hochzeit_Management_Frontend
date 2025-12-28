@@ -1,11 +1,24 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import DashboardHeader from "../components/DashboardHeader";
+
+const libraries = ["places"];
+const mapContainerStyle = {
+    width: '100%',
+    height: '300px',
+    borderRadius: '0.5rem'
+};
+const defaultCenter = {
+    lat: 40.7128,
+    lng: -74.0060
+};
 
 export default function CreateEvent() {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
 
+    // 1. State Definitions
     const [form, setForm] = useState({
         title: "",
         organizer1: "",
@@ -14,14 +27,42 @@ export default function CreateEvent() {
         endDate: "",
         location: "",
         imageFile: null,
-        imagePreview: ""
+        imagePreview: "",
+        selectedMenus: [],
+        hasParking: false
     });
 
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
+    const [mapCenter, setMapCenter] = useState(defaultCenter);
+    const [markerPosition, setMarkerPosition] = useState(null);
 
+    const mapOptions = useMemo(() => ({
+        keyboardShortcuts: false,
+        clickableIcons: true,
+        disableDefaultUI: false,
+        zoomControl: true,
+    }), []);
+
+    // 2. Google Maps Loader
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+        libraries
+    });
+
+    // 3. Helper Functions
     function updateField(name, value) {
         setForm((f) => ({ ...f, [name]: value }));
+    }
+
+    function toggleMenu(menu) {
+        setForm((f) => {
+            const menus = f.selectedMenus.includes(menu)
+                ? f.selectedMenus.filter((m) => m !== menu)
+                : [...f.selectedMenus, menu];
+            return { ...f, selectedMenus: menus };
+        });
     }
 
     function handleFileChange(e) {
@@ -31,6 +72,37 @@ export default function CreateEvent() {
         const url = URL.createObjectURL(file);
         updateField("imagePreview", url);
     }
+
+    // 4. Effects
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+                    setMapCenter(pos);
+                },
+                (error) => {
+                    console.error("Error getting location: ", error);
+                }
+            );
+        }
+    }, []);
+
+    // 5. Event Handlers
+    const onMapClick = (e) => {
+        if (!e || !e.latLng) return;
+        try {
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
+            setMarkerPosition({ lat, lng });
+            updateField("location", `${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+        } catch (error) {
+            console.error("Error handling map click:", error);
+        }
+    };
 
     function validate() {
         const newErrors = {};
@@ -43,39 +115,65 @@ export default function CreateEvent() {
         return newErrors;
     }
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
         const v = validate();
         setErrors(v);
         if (Object.keys(v).length) return;
         setSubmitting(true);
 
-        // Simulate event creation & store locally
-        const newEvent = {
-            id: Date.now(),
-            title: form.title,
-            organizer1: form.organizer1,
-            organizer2: form.organizer2,
-            startDate: form.startDate,
-            endDate: form.endDate,
-            location: form.location,
-            image: form.imagePreview || "https://via.placeholder.com/400x250.png?text=Event+Image",
-            // Simple derived date text (difference in days)
-            dateText: deriveDateText(form.startDate),
-            status: "started"
-        };
-
         try {
-            const existing = JSON.parse(localStorage.getItem("createdEvents")) || [];
-            localStorage.setItem("createdEvents", JSON.stringify([newEvent, ...existing]));
-        } catch {
-            // ignore
-        }
+            const user = JSON.parse(localStorage.getItem("user"));
+            const token = localStorage.getItem("token");
 
-        setTimeout(() => {
-            setSubmitting(false);
+            if (!user || !token) {
+                alert("You must be logged in to create an event.");
+                navigate("/login");
+                return;
+            }
+
+            // TODO: In a real app, you'd likely fetch or create a location first to get an ID.
+            // For now, we'll assume the backend might accept a raw location string or we mock an ID.
+            // Based on the backend code provided: "locationId" is required.
+            // We will mock a location ID for now or send 1 if you have seed data.
+            const locationId = 1; 
+
+            const payload = {
+                name: form.title,
+                description: "Event created via frontend", // You might want to add a description field to the form
+                startDate: new Date(form.startDate).toISOString(),
+                endDate: new Date(form.endDate).toISOString(),
+                locationId: locationId,
+                emailOrg2: form.organizer2,
+                imageUrl: form.imagePreview || "https://via.placeholder.com/400x250.png?text=Event+Image",
+                hasParking: form.hasParking,
+                // Note: The backend snippet didn't explicitly show 'menus' in the CreateEventRequest,
+                // but if it's supported, include it. Otherwise, it might need a separate call.
+                menus: form.selectedMenus 
+            };
+
+            const res = await fetch(`http://localhost:8080/api/events?userId=${user.id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Failed to create event");
+            }
+
+            // Success
             navigate("/home");
-        }, 500);
+        } catch (err) {
+            console.error(err);
+            alert("Error creating event: " + err.message);
+        } finally {
+            setSubmitting(false);
+        }
     }
 
     function deriveDateText(startDate) {
@@ -146,6 +244,41 @@ export default function CreateEvent() {
                                         placeholder="Venue or address"
                                     />
                                 </Field>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="hasParking"
+                                        className="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+                                        checked={form.hasParking}
+                                        onChange={(e) => updateField("hasParking", e.target.checked)}
+                                    />
+                                    <label htmlFor="hasParking" className="text-sm font-medium text-gray-700">
+                                        Has Parking Available
+                                    </label>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <span className="text-sm font-medium text-gray-700">Available Menus</span>
+                                    <div className="flex flex-wrap gap-3">
+                                        {["Standard", "Vegan", "Kids"].map((label) => {
+                                            const value = label.toLowerCase();
+                                            const isSelected = form.selectedMenus.includes(value);
+                                            return (
+                                                <button
+                                                    key={value}
+                                                    type="button"
+                                                    onClick={() => toggleMenu(value)}
+                                                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                                                        isSelected
+                                                            ? "bg-pink-500 text-white border-pink-500"
+                                                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                                                    }`}
+                                                >
+                                                    {label} Menu
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <Field label="Start Date" error={errors.startDate}>
                                         <input
@@ -166,6 +299,29 @@ export default function CreateEvent() {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-6">
+                                {/* Replaced Field with div to avoid putting GoogleMap inside a label tag */}
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-sm font-medium text-gray-700">Select Location on Map</span>
+                                    {isLoaded ? (
+                                        <GoogleMap
+                                            mapContainerStyle={mapContainerStyle}
+                                            center={mapCenter}
+                                            zoom={14}
+                                            onClick={onMapClick}
+                                            options={mapOptions}
+                                        >
+                                            {markerPosition && <Marker position={markerPosition} />}
+                                        </GoogleMap>
+                                    ) : (
+                                        <div className="h-[300px] w-full bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+                                            Loading Map...
+                                        </div>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Click on the map to place a marker.
+                                    </p>
+                                </div>
+
                                 <Field label="Event Image">
                                     {form.imagePreview ? (
                                         <div className="relative group">
