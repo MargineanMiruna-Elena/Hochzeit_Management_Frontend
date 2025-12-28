@@ -1,11 +1,24 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import DashboardHeader from "../components/DashboardHeader";
+
+const libraries = ["places"];
+const mapContainerStyle = {
+    width: '100%',
+    height: '300px',
+    borderRadius: '0.5rem'
+};
+const defaultCenter = {
+    lat: 40.7128,
+    lng: -74.0060
+};
 
 export default function CreateEvent() {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
 
+    // 1. State Definitions
     const [form, setForm] = useState({
         title: "",
         organizer1: "",
@@ -21,7 +34,24 @@ export default function CreateEvent() {
 
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
+    const [mapCenter, setMapCenter] = useState(defaultCenter);
+    const [markerPosition, setMarkerPosition] = useState(null);
 
+    const mapOptions = useMemo(() => ({
+        keyboardShortcuts: false,
+        clickableIcons: true,
+        disableDefaultUI: false,
+        zoomControl: true,
+    }), []);
+
+    // 2. Google Maps Loader
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+        libraries
+    });
+
+    // 3. Helper Functions
     function updateField(name, value) {
         setForm((f) => ({ ...f, [name]: value }));
     }
@@ -42,6 +72,37 @@ export default function CreateEvent() {
         const url = URL.createObjectURL(file);
         updateField("imagePreview", url);
     }
+
+    // 4. Effects
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+                    setMapCenter(pos);
+                },
+                (error) => {
+                    console.error("Error getting location: ", error);
+                }
+            );
+        }
+    }, []);
+
+    // 5. Event Handlers
+    const onMapClick = (e) => {
+        if (!e || !e.latLng) return;
+        try {
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
+            setMarkerPosition({ lat, lng });
+            updateField("location", `${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+        } catch (error) {
+            console.error("Error handling map click:", error);
+        }
+    };
 
     function validate() {
         const newErrors = {};
@@ -238,6 +299,29 @@ export default function CreateEvent() {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-6">
+                                {/* Replaced Field with div to avoid putting GoogleMap inside a label tag */}
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-sm font-medium text-gray-700">Select Location on Map</span>
+                                    {isLoaded ? (
+                                        <GoogleMap
+                                            mapContainerStyle={mapContainerStyle}
+                                            center={mapCenter}
+                                            zoom={14}
+                                            onClick={onMapClick}
+                                            options={mapOptions}
+                                        >
+                                            {markerPosition && <Marker position={markerPosition} />}
+                                        </GoogleMap>
+                                    ) : (
+                                        <div className="h-[300px] w-full bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+                                            Loading Map...
+                                        </div>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Click on the map to place a marker.
+                                    </p>
+                                </div>
+
                                 <Field label="Event Image">
                                     {form.imagePreview ? (
                                         <div className="relative group">
