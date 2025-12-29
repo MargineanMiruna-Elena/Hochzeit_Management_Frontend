@@ -273,7 +273,7 @@ export default function MyEventDetails() {
                     <Button
                         type="button"
                         onClick={() => navigate("/home")}
-                        className="self-start mb-4 inline-flex items-center px-4 py-2 rounded-md bg-pink-600 text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="self-start mb-4 inline-flex items-center px-4 py-2 rounded-md bg-pink-600 text-white text-sm font-medium hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                         <ArrowLeftIcon className="h-5 w-5 mr-1"/>
                         Back to Home

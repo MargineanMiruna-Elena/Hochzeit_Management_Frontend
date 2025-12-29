@@ -3,6 +3,8 @@ import HeroImage from "../components/HeroImage";
 import EventInfoBlock from "../components/EventInfoBlock";
 import PhotoGallery from "../components/PhotoGallery";
 import { useParams, Navigate, useNavigate } from "react-router-dom";
+import {ArrowLeftIcon} from "@heroicons/react/24/outline";
+import {Button} from "@material-tailwind/react";
 
 //TODO: Test with actual events from the database
 //TODO: Add editing option for the event
@@ -84,13 +86,14 @@ export default function EventDetails() {
     <div className="min-h-screen w-full bg-gray-50">
       <div className="flex flex-col items-center py-5">
         <div className="flex flex-col w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-          <button
-            type="button"
-            onClick={() => navigate("/home")}
-            className="self-start mb-4 inline-flex items-center px-4 py-2 rounded-md bg-pink-600 text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          <Button
+              type="button"
+              onClick={() => navigate("/home")}
+              className="self-start mb-4 inline-flex items-center px-4 py-2 rounded-md bg-pink-600 text-white text-sm font-medium hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
-            ← Back to Home
-          </button>
+            <ArrowLeftIcon className="h-5 w-5 mr-1"/>
+            Back to Home
+          </Button>
           <HeroImage src={event.hero} alt={event.title} />
           <EventInfoBlock
             title={event.title}
