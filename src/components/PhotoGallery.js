@@ -11,7 +11,7 @@ export default function PhotoGallery({ images = [], onUpload }) {
   };
 
   return (
-    <section className="mt-6 bg-white rounded-xl shadow-sm p-6">
+    <section className="bg-white rounded-xl shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-900">Photo Gallery</h2>
         <button

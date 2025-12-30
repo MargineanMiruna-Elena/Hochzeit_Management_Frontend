@@ -31,6 +31,13 @@ export default function MyEventCard({
                                         locationName,
                                         locationAddress
                                     }) {
+    const formatDate = (date) => new Date(date).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
+    let dateText;
+
     let status = "onTrack";
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -45,8 +52,11 @@ export default function MyEventCard({
     }
     const s = statusStyles[status] || statusStyles.onTrack;
 
-    const formatDate = (date) => new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-    const dateText = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+    if (formatDate(startDate) === formatDate(endDate)) {
+        dateText = formatDate(startDate);
+    } else {
+        dateText = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+    }
 
     return (
         <div className="p-4">

@@ -136,13 +136,13 @@ export default function ParticipantsManagement({participants = [], onUpdate, onD
                                             {isEditing ? (
                                                 <input
                                                     type="text"
-                                                    value={data.menuType || ""}
+                                                    value={data.foodPreference || ""}
                                                     onChange={(e) => handleTempChange("menuType", e.target.value)}
                                                     className="w-full min-w-0 text-sm border-gray-300 rounded px-2 py-1 border focus:ring-1 focus:ring-indigo-500 outline-none"
                                                 />
                                             ) : (
-                                                <div className="text-sm text-gray-600 truncate" title={data.menuType}>
-                                                    {data.menuType || "-"}
+                                                <div className="text-sm text-gray-600 truncate" title={data.foodPreference}>
+                                                    {data.foodPreference || "-"}
                                                 </div>
                                             )}
                                         </td>
@@ -151,14 +151,14 @@ export default function ParticipantsManagement({participants = [], onUpdate, onD
                                             {isEditing ? (
                                                 <input
                                                     type="checkbox"
-                                                    checked={!!data.parking}
+                                                    checked={!!data.needsParking}
                                                     onChange={(e) => handleTempChange("parking", e.target.checked)}
                                                     className="h-4 w-4 text-indigo-600 rounded cursor-pointer"
                                                 />
                                             ) : (
                                                 <span
-                                                    className={`font-bold text-sm ${data.parking ? "text-green-600" : "text-gray-200"}`}>
-                                                {data.parking ? "P" : "•"}
+                                                    className={`font-bold text-sm ${data.needsParking ? "text-green-600" : "text-gray-200"}`}>
+                                                {data.needsParking ? "P" : "•"}
                                             </span>
                                             )}
                                         </td>

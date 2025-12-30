@@ -197,7 +197,7 @@ export default function CreateEvent() {
                 emailOrg2: form.organizer2,
                 imageUrl: form.imagePreview || "https://via.placeholder.com/400x250.png?text=Event+Image",
                 hasParking: form.hasParking,
-                menus: form.selectedMenus
+                foodPreferences: form.selectedMenus
             };
 
             const res = await fetch(`http://localhost:8080/api/events?userId=${user.id}`, {
@@ -312,7 +312,7 @@ export default function CreateEvent() {
                                         <h3 className="font-medium text-lg tracking-wide mb-4">Available Menu Options</h3>
                                         <div className="flex flex-wrap gap-3">
                                             {["Standard", "Vegan", "Kids"].map((label) => {
-                                                const value = label.toLowerCase();
+                                                const value = label.toUpperCase();
                                                 const isSelected = form.selectedMenus.includes(value);
                                                 return (
                                                     <button

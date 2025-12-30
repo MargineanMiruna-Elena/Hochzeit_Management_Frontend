@@ -17,6 +17,7 @@ import {
     UserPlusIcon
 } from "@heroicons/react/24/outline";
 import ParticipantsManagement from "../components/ParticipantsManagement";
+import PhotoGallery from "../components/PhotoGallery";
 
 const libraries = ["places"];
 const mapContainerStyle = {
@@ -36,6 +37,7 @@ export default function MyEventDetails() {
     const [event, setEvent] = useState(null);
     const [editedEvent, setEditedEvent] = useState(null);
     const [participants, setParticipants] = useState([]);
+    const [gallery, setGallery] = useState([]);
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newParticipant, setNewParticipant] = useState({name: "", email: ""});
@@ -175,6 +177,7 @@ export default function MyEventDetails() {
             if (res.ok) {
                 const data = await res.json();
                 setParticipants(data);
+                console.log(participants);
             }
         } catch (err) {
             console.error(err);
@@ -212,6 +215,12 @@ export default function MyEventDetails() {
     if (loadingEvent) return <p className="p-4">Loading event...</p>;
     if (errorEvent) return <p className="p-4 text-red-500">Error: {errorEvent}</p>;
     if (!event) return <p className="p-4">Event not found.</p>;
+
+    const handleUpload = (files) => {
+        const urls = files.map((f) => URL.createObjectURL(f));
+        setGallery((prev) => [...urls, ...prev]);
+    };
+
 
     const handleOpenAddModal = () => setIsAddModalOpen(!isAddModalOpen);
 
@@ -703,6 +712,9 @@ export default function MyEventDetails() {
                             onSendEmails={handleSendInvitations}
                             isSendingEmails={isSendingEmails}
                         />
+                    </section>
+                    <section className="mt-2">
+                        <PhotoGallery images={gallery} onUpload={handleUpload} />
                     </section>
                 </div>
             </div>
