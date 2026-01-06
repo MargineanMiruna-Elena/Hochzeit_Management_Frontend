@@ -17,36 +17,12 @@ export default function Home() {
 
     const [query, setQuery] = useState("");
     const [myEvents, setMyEvents] = useState([]);
+    const [participantsEvents, setParticipantsEvents] = useState([]);
     const [loadingMyEvents, setLoadingMyEvents] = useState(true);
+    const [loadingParticipantsEvents, setLoadingParticipantsEvents] = useState(true);
     const [errorMyEvents, setErrorMyEvents] = useState("");
+    const [errorParticipantsEvents, setErrorParticipantsEvents] = useState("");
     const navigate = useNavigate();
-
-    // Removed static baseEvents and localStorage createdEvents to rely on backend data.
-    
-    const events = myEvents;
-
-    const filteredEvents = events.filter(
-        (e) =>
-            (e.name || e.title || "").toLowerCase().includes(query.toLowerCase()) ||
-            (e.location || "").toLowerCase().includes(query.toLowerCase())
-    );
-
-    const now = Date.now();
-    const pastEvents = filteredEvents.filter((e) => {
-        const date = new Date(e.startDate || e.date).getTime();
-        return date < now;
-    });
-    const upcomingEvents = filteredEvents.filter((e) => {
-        const date = new Date(e.startDate || e.date).getTime();
-        return date >= now;
-    });
-
-    // Helper to format date for display
-    const formatDate = (dateStr) => {
-        if (!dateStr) return "";
-        const d = new Date(dateStr);
-        return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-    };
 
     useEffect(() => {
         const fetchMyEvents = async () => {
@@ -54,36 +30,15 @@ export default function Home() {
             setErrorMyEvents("");
             try {
                 const token = localStorage.getItem("token");
-                const user = JSON.parse(localStorage.getItem("user"));
-                
-                if (!token || !user) return;
-
-                // Fetch events for the logged-in user
-                // Adjust endpoint if necessary. Assuming GET /api/events/user/{userId} or similar exists
-                // based on typical REST patterns, or using the existing /my-events if that's what the backend provides.
-                // The previous code used /api/events/my-events, let's stick to that or try a more standard one if it fails.
-                const res = await fetch(`http://localhost:8080/api/events/user/${user.id}`, {
+                const res = await fetch("http://localhost:8080/api/events/my-events", {
                     headers: {
                         "Authorization": `Bearer ${token}`,
                     },
                 });
-                
                 if (!res.ok) {
-                    // Fallback to previous endpoint if the above doesn't exist
-                     const res2 = await fetch("http://localhost:8080/api/events/my-events", {
-                        headers: {
-                            "Authorization": `Bearer ${token}`,
-                        },
-                    });
-                    if(!res2.ok) {
-                         const errText = await res2.text();
-                         throw new Error(errText || "Failed to fetch my events");
-                    }
-                    const data = await res2.json();
-                    setMyEvents(data);
-                    return;
+                    const errText = await res.text();
+                    throw new Error(errText || "Failed to fetch my events");
                 }
-                
                 const data = await res.json();
                 setMyEvents(data);
             } catch (err) {
@@ -94,8 +49,71 @@ export default function Home() {
             }
         };
 
+        const fetchParticipantsEvents = async () => {
+            setLoadingParticipantsEvents(true);
+            setErrorParticipantsEvents("");
+            try {
+                const token = localStorage.getItem("token");
+                const res = await fetch("http://localhost:8080/api/events/participants-events", {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                    },
+                });
+                if (!res.ok) {
+                    const errText = await res.text();
+                    throw new Error(errText || "Failed to fetch my events");
+                }
+                const data = await res.json();
+                setParticipantsEvents(data);
+            } catch (err) {
+                console.error(err);
+                setErrorParticipantsEvents(err.message);
+            } finally {
+                setLoadingParticipantsEvents(false);
+            }
+        };
+
         fetchMyEvents();
+        fetchParticipantsEvents();
     }, []);
+
+    const filteredMyEvents = useMemo(() => {
+        const searchTerm = query.toLowerCase();
+        return myEvents.filter((e) => {
+            const titleText = e.name || e.title || "";
+            const locationText = e.locationName || e.location || "";
+
+            return (
+                titleText.toLowerCase().includes(searchTerm) ||
+                locationText.toLowerCase().includes(searchTerm)
+            );
+        });
+    }, [myEvents, query]);
+
+    const filteredParticipantsEvents = useMemo(() => {
+        const searchTerm = query.toLowerCase();
+        return participantsEvents.filter((e) => {
+            const titleText = e.name || e.title || "";
+            const locationText = e.locationName || e.location || "";
+
+            return (
+                titleText.toLowerCase().includes(searchTerm) ||
+                locationText.toLowerCase().includes(searchTerm)
+            );
+        });
+    }, [participantsEvents, query]);
+
+    const now = Date.now();
+
+    const pastEvents = filteredParticipantsEvents.filter((e) => {
+        const eventTime = new Date(e.startDate || e.date).getTime();
+        return eventTime && eventTime < now;
+    });
+
+    const upcomingEvents = filteredParticipantsEvents.filter((e) => {
+        const eventTime = new Date(e.startDate || e.date).getTime();
+        return eventTime && eventTime >= now;
+    });
 
     return (
         <div className="min-h-screen w-full bg-gray-50">
@@ -123,7 +141,6 @@ export default function Home() {
                             </div>
                         </div>
 
-                        {/* My Events */}
                         <section>
                             <h2 className="text-2xl font-bold mb-4">My Events</h2>
                             {myEvents.length > 0 ? (
@@ -137,46 +154,29 @@ export default function Home() {
                             )}
                         </section>
 
-                        {/* Past Events */}
-                        <section>
-                            <h2 className="text-2xl font-bold mb-4">Past Events</h2>
-                            {pastEvents.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {pastEvents.map((event) => (
-                                        <EventCard
-                                            key={event.id}
-                                            id={event.id}
-                                            image={event.imageUrl || event.image}
-                                            dateText={formatDate(event.startDate || event.date)}
-                                            title={event.name || event.title}
-                                            location={event.location || "Unknown Location"}
-                                            status={event.status || "started"}
-                                        />
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-gray-500">No past events.</p>
-                            )}
-                        </section>
-
                         <section>
                             <h2 className="text-2xl font-bold mb-4">Upcoming Events</h2>
                             {upcomingEvents.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {upcomingEvents.map((event) => (
-                                        <EventCard
-                                            key={event.id}
-                                            id={event.id}
-                                            image={event.imageUrl || event.image}
-                                            dateText={formatDate(event.startDate || event.date)}
-                                            title={event.name || event.title}
-                                            location={event.location || "Unknown Location"}
-                                            status={event.status || "started"}
-                                        />
+                                    {upcomingEvents.map((ev) => (
+                                        <EventCard key={ev.id} {...ev} />
                                     ))}
                                 </div>
                             ) : (
                                 <p className="text-gray-500">No upcoming events.</p>
+                            )}
+                        </section>
+
+                        <section>
+                            <h2 className="text-2xl font-bold mb-4">Past Events</h2>
+                            {pastEvents.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {pastEvents.map((ev) => (
+                                        <EventCard key={ev.id} {...ev} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500">No past events.</p>
                             )}
                         </section>
                     </main>

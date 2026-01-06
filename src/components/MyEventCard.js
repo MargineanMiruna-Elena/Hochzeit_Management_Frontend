@@ -31,6 +31,13 @@ export default function MyEventCard({
                                         locationName,
                                         locationAddress
                                     }) {
+    const formatDate = (date) => new Date(date).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
+    let dateText;
+
     let status = "onTrack";
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -45,8 +52,11 @@ export default function MyEventCard({
     }
     const s = statusStyles[status] || statusStyles.onTrack;
 
-    const formatDate = (date) => new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-    const dateText = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+    if (formatDate(startDate) === formatDate(endDate)) {
+        dateText = formatDate(startDate);
+    } else {
+        dateText = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+    }
 
     return (
         <div className="p-4">
@@ -70,7 +80,7 @@ export default function MyEventCard({
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 21.75c2.548-2.295 6.375-6.87 6.375-10.592 0-3.53-2.84-6.395-6.375-6.395S5.625 7.629 5.625 11.158c0 3.722 3.827 8.297 6.375 10.592z" />
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 13.125a1.875 1.875 0 100-3.75 1.875 1.875 0 000 3.75z" />
                         </svg>
-                        <p className="text-sm">{locationName}, {locationAddress}</p>
+                        <p className="text-sm">{locationName}</p>
                     </div>
 
                     {/* Status și link */}
