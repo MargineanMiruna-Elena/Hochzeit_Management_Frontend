@@ -20,15 +20,6 @@ export default function DashboardHeader() {
             <div className="flex items-center gap-4">
                 <Button
                     variant="filled"
-                    size="sm"
-                    className={`h-10 w-10 p-0 rounded-full flex items-center justify-center ${active ? "bg-gray-200 hover:bg-gray-400" : "bg-pink-600 hover:bg-pink-700"} `}
-                    aria-label="Notifications"
-                    onClick={() => setActive(!active)}
-                >
-                    <BellIcon className={`w-5 h-5 ${active ? "text-pink-600" : "text-white"}`} />
-                </Button>
-                <Button
-                    variant="filled"
                     color="pink"
                     size="sm"
                     className="h-10 w-10 p-0 rounded-full flex items-center justify-center hover:bg-pink-700"

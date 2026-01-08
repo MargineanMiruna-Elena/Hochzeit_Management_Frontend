@@ -172,12 +172,18 @@ function Invitation() {
         <div className="container mx-auto px-4 py-8 max-w-3xl">
             <Card className="shadow-lg overflow-hidden">
                 <div className="relative h-64 w-full">
-                    <img
-                        src={eventDetails.image}
-                        alt="Event"
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    {(eventDetails.image === null) ?
+                        <div className="absolute inset-0 bg-gradient-to-t from-pink-300 to-transparent"/>
+                        :
+                        <>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"/>
+                            <img
+                                src={`http://localhost:8080/uploads/${eventDetails.image}`}
+                                alt={eventDetails.title}
+                                className="w-full h-full object-cover"
+                            />
+                        </>
+                    }
                     <div className="absolute bottom-4 left-6 text-white">
                         <h1 className="text-3xl font-bold drop-shadow-lg">{eventDetails.title}</h1>
                     </div>

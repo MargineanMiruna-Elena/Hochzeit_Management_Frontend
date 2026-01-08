@@ -1,8 +1,10 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {Button, Input, Typography} from "@material-tailwind/react";
 import {Link, useNavigate} from 'react-router-dom';
+import {AuthContext} from "../context/AuthContext";
 
 function Login() {
+    const { setUser, setToken, setRefreshToken } = useContext(AuthContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({email: '', password: '', backend: ''});
@@ -80,15 +82,13 @@ function Login() {
             }
 
             if (res.ok) {
-                localStorage.setItem("token", data.token);
-                localStorage.setItem(
-                    "user",
-                    JSON.stringify({
-                        id: data.id,
-                        name: data.name,
-                        email: data.email,
-                    })
-                );
+                setToken(data.token);
+                setRefreshToken(data.refreshToken);
+                setUser({
+                    id: data.id,
+                    name: data.name,
+                    email: data.email,
+                });
                 navigate("/home", {replace: true});
             } else {
                 backendErrorMessage(data, res);

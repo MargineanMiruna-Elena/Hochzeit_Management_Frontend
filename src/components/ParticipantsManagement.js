@@ -6,8 +6,9 @@ import {
     XMarkIcon
 } from "@heroicons/react/24/outline";
 import {PaperAirplaneIcon} from "@heroicons/react/16/solid";
+import {Button} from "@material-tailwind/react";
 
-export default function ParticipantsManagement({participants = [], onUpdate, onDelete, onSendEmails, isSendingEmails}) {
+export default function ParticipantsManagement({participants = [], onUpdate, onDelete, onSendEmails, onSendEmail, isSendingEmails}) {
     const [editIdx, setEditIdx] = useState(-1);
     const [tempRow, setTempRow] = useState(null);
 
@@ -66,10 +67,10 @@ export default function ParticipantsManagement({participants = [], onUpdate, onD
                             <tr>
                                 <th className="px-2 py-2 text-left text-sm font-semibold text-pink-600 uppercase w-[30%]">Name</th>
                                 <th className="px-2 py-2 text-left text-sm font-semibold text-pink-600 uppercase w-[30%]">Email</th>
-                                <th className="px-2 py-2 text-left text-sm font-semibold text-pink-600 uppercase w-24">Attending</th>
-                                <th className="px-2 py-2 text-left text-sm font-semibold text-pink-600 uppercase w-20">Menu</th>
-                                <th className="px-1 py-2 text-center text-sm font-semibold text-pink-600 uppercase w-10">Park</th>
-                                <th className="px-2 py-2 text-right text-sm font-semibold text-pink-600 uppercase w-16">Actions</th>
+                                <th className="px-2 py-2 text-left text-sm font-semibold text-pink-600 uppercase w-20">Attending</th>
+                                <th className="px-2 py-2 text-left text-sm font-semibold text-pink-600 uppercase w-12">Menu</th>
+                                <th className="px-1 py-2 text-center text-sm font-semibold text-pink-600 uppercase w-12">Park</th>
+                                <th className="px-2 py-2 text-center text-sm font-semibold text-pink-600 uppercase w-16">Actions</th>
                             </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -183,20 +184,28 @@ export default function ParticipantsManagement({participants = [], onUpdate, onD
                                                 </div>
                                             ) : (
                                                 <div
-                                                    className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    className="flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => onSendEmail(p.id)}
+                                                        disabled={isSendingEmails}
+                                                        className="text-green-600 p-1 bg-green-50 rounded"
+                                                        title="Invite"
+                                                    >
+                                                        <PaperAirplaneIcon className="h-4 w-4"/>
+                                                    </button>
                                                     <button
                                                         onClick={() => startEdit(idx)}
-                                                        className="text-indigo-600 hover:text-indigo-800 p-1 hover:bg-indigo-50 rounded"
+                                                        className="text-indigo-800 p-1 bg-indigo-50 rounded"
                                                         title="Edit"
                                                     >
-                                                        <PencilSquareIcon className="h-4 w-4"/>
+                                                        <PencilSquareIcon className="h-5 w-5"/>
                                                     </button>
                                                     <button
                                                         onClick={() => handleRemove(p.id)}
-                                                        className="text-red-400 hover:text-red-600 p-1 hover:bg-red-50 rounded"
+                                                        className="text-red-600 p-1 bg-red-50 rounded"
                                                         title="Delete"
                                                     >
-                                                        <TrashIcon className="h-4 w-4"/>
+                                                        <TrashIcon className="h-5 w-5"/>
                                                     </button>
                                                 </div>
                                             )}
@@ -209,13 +218,13 @@ export default function ParticipantsManagement({participants = [], onUpdate, onD
 
                     </div>
                     <div className="flex justify-end mt-2">
-                        <button
+                        <Button
                             onClick={onSendEmails}
                             disabled={isSendingEmails}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-white font-medium transition shadow-sm
+                            className={`flex items-center gap-2
                             ${isSendingEmails
                                 ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500"}
+                                : "bg-green-500 hover:bg-green-600"}
                             `}
                         >
                             {isSendingEmails ? (
@@ -230,7 +239,7 @@ export default function ParticipantsManagement({participants = [], onUpdate, onD
                                     Send Invitations to All
                                 </>
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </>
             )}
