@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Card, CardBody, Checkbox, Typography} from "@material-tailwind/react";
+import {Button, Card, CardBody, Radio, Checkbox, Typography} from "@material-tailwind/react";
 import {CalendarIcon, CheckIcon, MapPinIcon, UserIcon, XMarkIcon} from "@heroicons/react/16/solid";
 
 function Invitation() {
@@ -8,7 +8,8 @@ function Invitation() {
     const [eventDetails, setEventDetails] = useState(null);
     const [accepted, setAccepted] = useState(false);
     const [declined, setDeclined] = useState(false);
-    const [foodPreferences, setFoodPreferences] = useState([]);
+    const [selectedFoodPreference, setSelectedFoodPreference] = useState('');
+    const [needsParking, setNeedsParking] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
@@ -29,11 +30,11 @@ function Invitation() {
         const fetchData = async () => {
             try {
                 const res = await fetch(`http://localhost:8080/api/invitation?token=${token}`);
-                
+
                 if (!res.ok) {
                     throw new Error('Failed to fetch invitation details');
                 }
-                
+
                 const data = await res.json();
                 console.log("Event details:", data);
                 setEventDetails(data);
@@ -49,19 +50,20 @@ function Invitation() {
     }, [token]);
 
     const handleSubmit = async () => {
-        if (eventDetails.askFoodPreferences && foodPreferences.length === 0) {
-            alert("Please select at least one food preference");
+        if (eventDetails.availableFoodPreferences && !selectedFoodPreference) {
+            alert("Please select a food preference");
             return;
         }
 
         try {
             const payload = {
                 accept: true,
-                foodPreferences: foodPreferences
+                foodPreferences: selectedFoodPreference ? selectedFoodPreference : "",
+                needsParking: eventDetails.hasParking ? needsParking : null
             };
-            
+
             console.log("Submitting RSVP:", payload);
-            
+
             const res = await fetch(`http://localhost:8080/api/invitation/rsvp?token=${token}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -89,12 +91,12 @@ function Invitation() {
     const handleDecline = async () => {
         setDeclined(true);
         setAccepted(false);
-        
+
         try {
             const payload = { accept: false };
-            
+
             console.log("Submitting decline:", payload);
-            
+
             const res = await fetch(`http://localhost:8080/api/invitation/rsvp?token=${token}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -112,14 +114,6 @@ function Invitation() {
             console.error("Error submitting decline:", err);
             alert("Failed to submit response. Please try again.");
         }
-    };
-
-    const toggleFoodPreference = (value) => {
-        setFoodPreferences(prev => 
-            prev.includes(value) 
-                ? prev.filter(p => p !== value)
-                : [...prev, value]
-        );
     };
 
     if (loading) {
@@ -177,36 +171,39 @@ function Invitation() {
     return (
         <div className="container mx-auto px-4 py-8 max-w-3xl">
             <Card className="shadow-lg overflow-hidden">
-                {/* Event Image Header */}
                 <div className="relative h-64 w-full">
-                    <img
-                        src={eventDetails.image}
-                        alt="Event"
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    {(eventDetails.image === null) ?
+                        <div className="absolute inset-0 bg-gradient-to-t from-pink-300 to-transparent"/>
+                        :
+                        <>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"/>
+                            <img
+                                src={`http://localhost:8080/uploads/${eventDetails.image}`}
+                                alt={eventDetails.title}
+                                className="w-full h-full object-cover"
+                            />
+                        </>
+                    }
                     <div className="absolute bottom-4 left-6 text-white">
                         <h1 className="text-3xl font-bold drop-shadow-lg">{eventDetails.title}</h1>
                     </div>
                 </div>
 
                 <CardBody className="space-y-6">
-                    {/* Event Description */}
                     <p className="leading-relaxed text-gray-700 text-lg">
                         {eventDetails.description}
                     </p>
 
-                    {/* Event Details */}
                     <div className="space-y-3 border-l-4 border-pink-500 pl-4">
                         <DetailItem
                             icon={<UserIcon className="h-5 w-5 text-pink-500 mt-0.5" />}
-                            label="Organizer"
+                            label="Contact Organizers"
                             value={eventDetails.organizer}
                         />
 
                         <DetailItem
                             icon={<CalendarIcon className="h-5 w-5 text-pink-500 mt-0.5" />}
-                            label="Date & Time"
+                            label="Date"
                             value={eventDetails.date}
                         />
 
@@ -217,7 +214,6 @@ function Invitation() {
                         />
                     </div>
 
-                    {/* Response Buttons or Form */}
                     {!accepted && !declined ? (
                         <div className="grid grid-cols-2 gap-4 pt-4">
                             <Button
@@ -242,10 +238,12 @@ function Invitation() {
                             </Button>
                         </div>
                     ) : accepted ? (
-                        <FoodPreferencesForm
+                        <RSVPForm
                             eventDetails={eventDetails}
-                            foodPreferences={foodPreferences}
-                            toggleFoodPreference={toggleFoodPreference}
+                            selectedFoodPreference={selectedFoodPreference}
+                            setSelectedFoodPreference={setSelectedFoodPreference}
+                            needsParking={needsParking}
+                            setNeedsParking={setNeedsParking}
                             onSubmit={handleSubmit}
                         />
                     ) : null}
@@ -267,8 +265,9 @@ function DetailItem({ icon, label, value }) {
     );
 }
 
-function FoodPreferencesForm({ eventDetails, foodPreferences, toggleFoodPreference, onSubmit }) {
-    const canSubmit = !eventDetails.askFoodPreferences || foodPreferences.length > 0;
+function RSVPForm({ eventDetails, selectedFoodPreference, setSelectedFoodPreference, needsParking, setNeedsParking, onSubmit }) {
+    const hasOptions = eventDetails.availableFoodPreferences?.length > 0;
+    const canSubmit = !hasOptions || selectedFoodPreference;
 
     return (
         <Card className="p-4 bg-pink-50 rounded-lg border border-pink-200">
@@ -277,24 +276,25 @@ function FoodPreferencesForm({ eventDetails, foodPreferences, toggleFoodPreferen
                     Please Confirm Your Details
                 </Typography>
 
-                {eventDetails.askFoodPreferences ? (
+                {hasOptions ? (
                     <div className="space-y-3">
                         <Typography className="font-semibold text-sm text-gray-700">
-                            Food Preferences * (select at least one)
+                            Food Preference * (select one)
                         </Typography>
                         <div className="space-y-2">
-                            {eventDetails.availableFoodPreferences?.map((option) => (
+                            {eventDetails.availableFoodPreferences.map((option) => (
                                 <label
-                                    key={option.value}
+                                    key={option}
                                     className="flex items-center p-3 rounded-md hover:bg-pink-100 cursor-pointer transition-colors"
                                 >
-                                    <Checkbox
+                                    <Radio
                                         color="pink"
-                                        checked={foodPreferences.includes(option.value)}
-                                        onChange={() => toggleFoodPreference(option.value)}
+                                        name="foodPreference"
+                                        checked={selectedFoodPreference === option}
+                                        onChange={() => setSelectedFoodPreference(option)}
                                     />
                                     <Typography className="ml-3 font-medium">
-                                        {option.label}
+                                        {option.charAt(0) + option.slice(1).toLowerCase().replace('_', ' ')}
                                     </Typography>
                                 </label>
                             ))}
@@ -306,9 +306,27 @@ function FoodPreferencesForm({ eventDetails, foodPreferences, toggleFoodPreferen
                     </Typography>
                 )}
 
+                {eventDetails.hasParking && (
+                    <div className="space-y-3 pt-2">
+                        <Typography className="font-semibold text-sm text-gray-700">
+                            Parking
+                        </Typography>
+                        <label className="flex items-center p-3 rounded-md hover:bg-pink-100 cursor-pointer transition-colors">
+                            <Checkbox
+                                color="pink"
+                                checked={needsParking}
+                                onChange={(e) => setNeedsParking(e.target.checked)}
+                            />
+                            <Typography className="ml-3 font-medium">
+                                I need a parking spot
+                            </Typography>
+                        </label>
+                    </div>
+                )}
+
                 <Button
                     onClick={onSubmit}
-                    className="w-full h-12 bg-pink-600 hover:bg-pink-700"
+                    className="w-full h-12 bg-pink-600 hover:bg-pink-700 text-white"
                     size="lg"
                     disabled={!canSubmit}
                 >
