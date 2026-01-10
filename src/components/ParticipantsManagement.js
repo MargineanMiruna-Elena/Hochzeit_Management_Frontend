@@ -8,7 +8,14 @@ import {
 import {PaperAirplaneIcon} from "@heroicons/react/16/solid";
 import {Button} from "@material-tailwind/react";
 
-export default function ParticipantsManagement({participants = [], onUpdate, onDelete, onSendEmails, onSendEmail, isSendingEmails}) {
+export default function ParticipantsManagement({
+                                                   participants = [],
+                                                   onUpdate,
+                                                   onDelete,
+                                                   onSendEmails,
+                                                   onSendEmail,
+                                                   isSendingEmails
+                                               }) {
     const [editIdx, setEditIdx] = useState(-1);
     const [tempRow, setTempRow] = useState(null);
 
@@ -109,59 +116,24 @@ export default function ParticipantsManagement({participants = [], onUpdate, onD
                                         </td>
 
                                         <td className="px-2 py-2 align-middle">
-                                            {isEditing ? (
-                                                <select
-                                                    value={getStatusWord(data.attending)}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value;
-                                                        let backendValue = null;
-                                                        if (val === "Accepted") backendValue = true;
-                                                        else if (val === "Denied") backendValue = false;
-                                                        handleTempChange("attending", backendValue);
-                                                    }}
-                                                    className="w-full min-w-0 text-sm border-gray-300 rounded px-1 py-1 border focus:ring-1 focus:ring-indigo-500 outline-none"
-                                                >
-                                                    <option value="Pending">Pending</option>
-                                                    <option value="Accepted">Accepted</option>
-                                                    <option value="Denied">Denied</option>
-                                                </select>
-                                            ) : (
                                                 <span
                                                     className={`px-2 py-0.5 inline-flex text-xs font-medium rounded border ${getStatusColor(data.attending)}`}>
                                                 {getStatusWord(data.attending)}
                                             </span>
-                                            )}
                                         </td>
 
                                         <td className="px-2 py-2 align-middle">
-                                            {isEditing ? (
-                                                <input
-                                                    type="text"
-                                                    value={data.foodPreference || ""}
-                                                    onChange={(e) => handleTempChange("menuType", e.target.value)}
-                                                    className="w-full min-w-0 text-sm border-gray-300 rounded px-2 py-1 border focus:ring-1 focus:ring-indigo-500 outline-none"
-                                                />
-                                            ) : (
-                                                <div className="text-sm text-gray-600 truncate" title={data.foodPreference}>
-                                                    {data.foodPreference || "-"}
-                                                </div>
-                                            )}
+                                            <div className="text-sm text-gray-600 truncate" title={data.foodPreference}>
+                                                {data.foodPreference || "-"}
+                                            </div>
+
                                         </td>
 
                                         <td className="px-1 py-2 text-center align-middle">
-                                            {isEditing ? (
-                                                <input
-                                                    type="checkbox"
-                                                    checked={!!data.needsParking}
-                                                    onChange={(e) => handleTempChange("parking", e.target.checked)}
-                                                    className="h-4 w-4 text-indigo-600 rounded cursor-pointer"
-                                                />
-                                            ) : (
                                                 <span
                                                     className={`font-bold text-sm ${data.needsParking ? "text-green-600" : "text-gray-200"}`}>
                                                 {data.needsParking ? "P" : "•"}
                                             </span>
-                                            )}
                                         </td>
 
                                         <td className="px-2 py-2 text-right align-middle whitespace-nowrap">
