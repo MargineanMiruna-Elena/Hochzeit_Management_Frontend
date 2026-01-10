@@ -21,7 +21,7 @@ const statusStyles = {
 
 export default function MyEventCard({
                                         id,
-                                        image,
+                                        imageUrl,
                                         name,
                                         startDate,
                                         endDate,
@@ -58,14 +58,20 @@ export default function MyEventCard({
         dateText = `${formatDate(startDate)} - ${formatDate(endDate)}`;
     }
 
+    const fullImageUrl = `http://localhost:8080/uploads/${imageUrl}`;
+
     return (
         <div className="p-4">
             <div className="flex flex-col rounded-xl shadow transition-transform transition-shadow duration-300 ease-out hover:-translate-y-2 hover:shadow-xl bg-white">
                 <div
-                    className={`w-full aspect-[16/10] rounded-t-xl flex items-center justify-center ${!image ? "bg-pink-100" : ""}`}
-                    style={image ? { backgroundImage: `url(${image})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
-                >
-                    {!image && <span className="text-pink-500 font-bold text-xl">No Image</span>}
+                    className={`w-full aspect-[16/10] rounded-t-xl flex items-center justify-center ${(imageUrl===null) ? "bg-pink-100" : ""}`}
+
+                    style={imageUrl ? {
+                    backgroundImage: `url(${fullImageUrl})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center"
+                } : {}}>
+                    {(imageUrl===null) && <span className="text-pink-500 font-bold text-xl">No Image</span>}
                 </div>
 
                 <div className="flex flex-col gap-4 p-4">
@@ -74,7 +80,6 @@ export default function MyEventCard({
                         <p className="text-lg font-bold leading-tight text-gray-900">{name}</p>
                     </div>
 
-                    {/* Locație */}
                     <div className="flex items-center gap-2 text-gray-500">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 21.75c2.548-2.295 6.375-6.87 6.375-10.592 0-3.53-2.84-6.395-6.375-6.395S5.625 7.629 5.625 11.158c0 3.722 3.827 8.297 6.375 10.592z" />
@@ -83,7 +88,6 @@ export default function MyEventCard({
                         <p className="text-sm">{locationName}</p>
                     </div>
 
-                    {/* Status și link */}
                     <div className="flex items-center gap-3 justify-between mt-2">
                         <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium ${s.wrapper}`}>
                             <span className={`size-2 rounded-full ${s.dot}`}></span>
@@ -91,7 +95,7 @@ export default function MyEventCard({
                         </div>
                         <Link
                             to={`/my-events/${id}`}
-                            className="flex items-center justify-center h-10 px-4 rounded-lg bg-theme-pink text-white text-sm font-semibold hover:opacity-90 transition"
+                            className="flex items-center justify-center h-10 px-4 rounded-lg bg-pink-600 text-white text-sm font-semibold hover:opacity-90 transition"
                         >
                             View Details
                         </Link>

@@ -214,6 +214,28 @@ export default function CreateEvent() {
                 throw new Error(errorText || "Failed to create event");
             }
 
+            const createdEvent = await res.json();
+            const newEventId = createdEvent.id;
+
+            if (form.imageFile) {
+                const formData = new FormData();
+                formData.append('file', form.imageFile);
+
+                try {
+                    const resCover = await fetch(`http://localhost:8080/api/events/${newEventId}/upload-cover`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: formData,
+                    });
+
+                    if (!resCover.ok) {
+                        console.error("Couldn't save image.");
+                    }
+                } catch (err) {
+                    console.error("Error uploading cover:", err);
+                }
+            }
+
             navigate("/home");
         } catch (err) {
             console.error(err);

@@ -37,7 +37,6 @@ export default function MyEventDetails() {
     const [event, setEvent] = useState(null);
     const [editedEvent, setEditedEvent] = useState(null);
     const [participants, setParticipants] = useState([]);
-    const [gallery, setGallery] = useState([]);
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newParticipant, setNewParticipant] = useState({name: "", email: ""});
@@ -158,14 +157,26 @@ export default function MyEventDetails() {
             const reader = new FileReader();
             reader.onload = () => {
                 setImage(reader.result);
+                setEditedEvent(prev => ({
+                    ...prev,
+                    imageUrl: file
+                }));
             };
             reader.readAsDataURL(file);
         }
     };
 
     const handleRemoveImage = () => {
+        setEditedEvent(prev => ({
+            ...prev,
+            imageUrl: "null"
+        }));
+
         setImage("");
-        if (fileInputRef.current) fileInputRef.current.value = "";
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
     };
 
     const fetchParticipants = async () => {
@@ -215,11 +226,6 @@ export default function MyEventDetails() {
     if (loadingEvent) return <p className="p-4">Loading event...</p>;
     if (errorEvent) return <p className="p-4 text-red-500">Error: {errorEvent}</p>;
     if (!event) return <p className="p-4">Event not found.</p>;
-
-    const handleUpload = (files) => {
-        const urls = files.map((f) => URL.createObjectURL(f));
-        setGallery((prev) => [...urls, ...prev]);
-    };
 
 
     const handleOpenAddModal = () => setIsAddModalOpen(!isAddModalOpen);
@@ -303,6 +309,30 @@ export default function MyEventDetails() {
         }
     };
 
+    const handleSend = async (participantId) => {
+        if (isSendingEmails) return;
+
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`http://localhost:8080/api/events/${id}/send-invitation/${participantId}`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!res.ok) {
+                const errorMsg = await res.text();
+                throw new Error(errorMsg || "Failed to send invitation");
+            }
+
+            alert("Invitation sent successfully!");
+        } catch (err) {
+            console.error("Error sending individual email:", err);
+            alert("Error: " + err.message);
+        }
+    };
+
     const handleSendInvitations = async () => {
         setIsSendingEmails(true);
         try {
@@ -339,22 +369,6 @@ export default function MyEventDetails() {
     const handleSave = async () => {
         try {
             const token = localStorage.getItem("token");
-
-            // Log pentru debug
-            console.log('Saving event with data:', {
-                event: {
-                    name: editedEvent.name,
-                    description: editedEvent.description,
-                    startDate: editedEvent.startDate,
-                    endDate: editedEvent.endDate,
-                    locationId: editedEvent.locationId
-                },
-                location: {
-                    name: editedEvent.locationName,
-                    address: editedEvent.locationAddress,
-                    coordinates: editedEvent.locationCoordinates
-                }
-            });
 
             // Update event details
             const eventUpdateRes = await fetch(`http://localhost:8080/api/events/${id}`, {
@@ -395,6 +409,29 @@ export default function MyEventDetails() {
                 const errorText = await locationUpdateRes.text();
                 throw new Error(`Failed to update location: ${errorText}`);
             }
+
+            if (editedEvent.imageUrl instanceof File) {
+                const formData = new FormData();
+                formData.append('file', editedEvent.imageUrl);
+
+                const resCover = await fetch(`http://localhost:8080/api/events/${id}/upload-cover`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData,
+                });
+
+                if (resCover.ok) {
+                    const coverData = await resCover.json();
+                    editedEvent.imageUrl = coverData.imageUrl.replace('/uploads/', '');
+                } else {
+                    console.error("Couldn't save image.");
+                }
+            }
+
+            setEvent(editedEvent);
+            setImage("");
+            setMarkerPosition(null);
+            setIsEditing(false);
 
             // Update local state
             setEvent(editedEvent);
@@ -514,10 +551,10 @@ export default function MyEventDetails() {
 
                                         {isEditing ? (
                                             <div className="space-y-4">
-                                                {image ? (
+                                                {(editedEvent.imageUrl !== null || image) ? (
                                                     <div className="relative group">
                                                         <img
-                                                            src={image}
+                                                            src={image || `http://localhost:8080/uploads/${editedEvent.imageUrl}`}
                                                             alt="Preview"
                                                             className="w-full h-56 object-cover rounded-lg border border-gray-200"
                                                         />
@@ -530,10 +567,8 @@ export default function MyEventDetails() {
                                                         </button>
                                                     </div>
                                                 ) : (
-                                                    <div
-                                                        className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-gray-300 rounded-lg p-8 bg-gray-50">
-                                                        <p className="text-sm text-gray-600">Upload an image to
-                                                            represent the event</p>
+                                                    <div className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-gray-300 rounded-lg p-8 bg-gray-50">
+                                                        <p className="text-sm text-gray-600">Upload an image to represent the event</p>
                                                         <button
                                                             type="button"
                                                             onClick={() => fileInputRef.current?.click()}
@@ -553,17 +588,15 @@ export default function MyEventDetails() {
                                             </div>
                                         ) : (
                                             <div>
-                                                {image ? (
+                                                {displayEvent.imageUrl !== null ? (
                                                     <img
-                                                        src={image}
+                                                        src={`http://localhost:8080/uploads/${displayEvent.imageUrl}`}
                                                         alt="Event"
                                                         className="w-full h-56 object-cover rounded-lg border border-gray-200 shadow-sm"
                                                     />
                                                 ) : (
-                                                    <div
-                                                        className="flex items-center justify-center h-32 bg-gray-100 rounded-lg border border-gray-200">
-                                                        <p className="text-gray-500 text-sm italic">No picture
-                                                            yet</p>
+                                                    <div className="flex items-center justify-center h-32 bg-gray-100 rounded-lg border border-gray-200">
+                                                        <p className="text-gray-500 text-sm italic">No picture yet</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -710,11 +743,12 @@ export default function MyEventDetails() {
                             onUpdate={handleUpdateParticipant}
                             onDelete={handleDeleteParticipant}
                             onSendEmails={handleSendInvitations}
+                            onSendEmail={handleSend}
                             isSendingEmails={isSendingEmails}
                         />
                     </section>
                     <section className="mt-2">
-                        <PhotoGallery images={gallery} onUpload={handleUpload} />
+                        <PhotoGallery eventId={id} org1={displayEvent.emailOrg1} org2={displayEvent.emailOrg2}/>
                     </section>
                 </div>
             </div>
